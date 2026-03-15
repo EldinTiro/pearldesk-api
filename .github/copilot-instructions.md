@@ -369,3 +369,61 @@ These are registered in `PearlDesk.Application/DependencyInjection.cs` and apply
 - Do not throw exceptions for expected business errors — return `ErrorOr` errors.
 - Do not put business logic in endpoints — endpoints only translate HTTP ↔ MediatR.
 - Do not reference one module from another module — go through the Application/Domain layers.
+
+---
+
+## Planned Modules & Roadmap
+
+The full product vision is documented in `documentation/implementation-plan.md`. Key context for agents:
+
+### Module Status
+
+| Module | Status | Notes |
+|---|---|---|
+| `PearlDesk.Identity` | ✅ Implemented | Login, register, JWT, roles |
+| `PearlDesk.Tenants` | ✅ Implemented | Tenant management |
+| `PearlDesk.Staff` | ✅ Implemented | Staff profiles, availability |
+| `PearlDesk.Patients` | ✅ Implemented | Full CRUD, medical history, allergies |
+| `PearlDesk.Appointments` | ✅ Implemented | Booking, status lifecycle |
+| `PearlDesk.Treatments` | 🔲 Planned (Phase 3) | Treatment plans, CDT codes, dental chart, SOAP notes |
+| `PearlDesk.Billing` | 🔲 Planned (Phase 4) | Invoicing, Stripe payments, insurance claims |
+| `PearlDesk.Notifications` | 🔲 Planned (Phase 2/4) | Email (SES/SendGrid) + SMS (Twilio), Hangfire reminders |
+| `PearlDesk.Documents` | 🔲 Planned (Phase 3) | S3 file uploads, signed URLs, per-patient docs |
+| `PearlDesk.Reporting` | 🔲 Planned (Phase 4) | Revenue, utilisation, PDF/Excel export |
+
+### Roles — Current vs Planned
+
+Roles currently implemented in `PearlDesk.Domain.Identity.Roles`:
+- `SuperAdmin`, `ClinicOwner`, `ClinicAdmin`, `Dentist`, `Hygienist`, `Receptionist`, `BillingStaff`, `ReadOnly`
+
+Roles **planned but not yet added** (do not use until explicitly implemented):
+- `DentalAssistant` — clinical support
+- `Patient` — patient portal access
+
+### Background Jobs
+- **Hangfire** with PostgreSQL storage is the planned background job processor.
+- Use Hangfire for: appointment reminder scheduling, notification delivery, tenant seeding jobs.
+- Hangfire dashboard will be served by the API at `/hangfire`, restricted to `SuperAdmin`.
+
+### External Service Integrations (Planned)
+| Service | Provider | Module |
+|---|---|---|
+| Email | AWS SES / SendGrid | Notifications |
+| SMS | Twilio | Notifications |
+| Payments | Stripe.NET | Billing |
+| File storage | AWS S3 | Documents |
+| DNS / subdomains | AWS Route 53 | Infrastructure |
+
+### Deployment Target
+- **AWS ECS Fargate** (containerised via Docker)
+- **RDS PostgreSQL 17** for the database
+- **ElastiCache Redis** for caching
+- **Terraform** for infrastructure as code
+- **GitHub Actions** for CI/CD (build → test → push image)
+
+### Implementation Phases Summary
+- **Phase 1** ✅ Foundation — solution skeleton, EF, Identity, multi-tenancy, CI/CD
+- **Phase 2** ✅ Core backend — Staff, Patients, Appointments, basic notifications
+- **Phase 3** 🔲 Clinical — Treatments, dental chart, SOAP notes, Documents
+- **Phase 4** 🔲 Business — Billing, Stripe, Reporting, SMS reminders
+- **Phase 5** 🔲 Production — Terraform/AWS, security audit, Playwright E2E, monitoring
