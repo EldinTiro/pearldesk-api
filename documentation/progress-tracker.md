@@ -1,0 +1,374 @@
+# PearlDesk — Feature Progress Tracker
+
+> Living document. Update as features ship.  
+> Last updated: 2026-03-16
+
+**Legend:** ✅ Done · 🔄 Partial · 🔲 Not started · 🚫 Blocked
+
+---
+
+## Table of Contents
+
+1. [Infrastructure & Foundation](#1-infrastructure--foundation)
+2. [Authentication & Identity](#2-authentication--identity)
+3. [Tenants (SuperAdmin)](#3-tenants-superadmin)
+4. [Staff](#4-staff)
+5. [Patients](#5-patients)
+6. [Appointments](#6-appointments)
+7. [Treatments (Phase 3)](#7-treatments-phase-3)
+8. [Billing (Phase 4)](#8-billing-phase-4)
+9. [Notifications (Phase 2/4)](#9-notifications-phase-24)
+10. [Documents (Phase 3)](#10-documents-phase-3)
+11. [Reporting (Phase 4)](#11-reporting-phase-4)
+12. [Frontend Shell & UX](#12-frontend-shell--ux)
+13. [Testing](#13-testing)
+14. [DevOps & Production](#14-devops--production)
+
+---
+
+## 1. Infrastructure & Foundation
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 1.1 | .NET 9 solution structure (API / Application / Domain / Infrastructure / Modules) | ✅ | |
+| 1.2 | EF Core 9 + Npgsql + PostgreSQL 17 | ✅ | |
+| 1.3 | Finbuckle multi-tenancy (subdomain strategy) | ✅ | Config store — dev tenant `localhost` |
+| 1.4 | Global query filter — tenant + soft delete isolation | ✅ | `TenantAuditableEntity` base class |
+| 1.5 | MediatR pipeline (Logging / Validation / Performance behaviors) | ✅ | |
+| 1.6 | FluentValidation auto-registration | ✅ | |
+| 1.7 | ErrorOr result pattern throughout | ✅ | |
+| 1.8 | FastEndpoints + JWT Bearer + HMAC-SHA256 dev key | ✅ | Swap to RS256 for production |
+| 1.9 | Docker Compose local dev (API + PostgreSQL + Redis) | ✅ | |
+| 1.10 | Serilog structured logging | ✅ | |
+| 1.11 | `System.Text.Json` global enum string serialization | ✅ | `JsonStringEnumConverter` in `Program.cs` |
+| 1.12 | Redis caching layer | 🔲 | Configured, not actively used yet |
+| 1.13 | Hangfire background jobs (PostgreSQL storage) | 🔲 | Planned for Notifications |
+| 1.14 | GitHub Actions CI/CD pipeline | 🔲 | |
+| 1.15 | Rate limiting (300 req/min per tenant) | 🔲 | Middleware registered, not tuned |
+
+---
+
+## 2. Authentication & Identity
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 2.1 | Register user (tenant-scoped) | ✅ | |
+| 2.2 | Login — JWT access token + refresh token | ✅ | |
+| 2.3 | Refresh token rotation | ✅ | |
+| 2.4 | Logout / token revocation | ✅ | |
+| 2.5 | Role seeding (`SuperAdmin`, `ClinicOwner`, `ClinicAdmin`, `Dentist`, `Hygienist`, `Receptionist`, `BillingStaff`, `ReadOnly`) | ✅ | |
+| 2.6 | SuperAdmin auto-seed on startup | ✅ | |
+| 2.7 | Password reset (email link) | 🔲 | Requires Notifications module |
+| 2.8 | Two-factor authentication (TOTP) | 🔲 | |
+| 2.9 | Account lockout after failed attempts | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 2.10 | Login page with logo | ✅ | Logo above card, `h-40` |
+| 2.11 | JWT token storage + auto-refresh | ✅ | |
+| 2.12 | Role-based route guards | ✅ | |
+| 2.13 | Auth store (Zustand) | ✅ | |
+| 2.14 | Logout | ✅ | |
+| 2.15 | Forgot password page | 🔲 | |
+| 2.16 | Change password (in profile) | 🔲 | |
+
+---
+
+## 3. Tenants (SuperAdmin)
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 3.1 | Create tenant | ✅ | |
+| 3.2 | List / get tenant | ✅ | |
+| 3.3 | Update tenant (name, plan) | ✅ | |
+| 3.4 | Activate / deactivate tenant | ✅ | |
+| 3.5 | Per-tenant user management (list, invite, remove) | ✅ | |
+| 3.6 | Tenant-scoped settings (timezone, working hours, logo) | 🔲 | |
+| 3.7 | Stripe subscription management | 🔲 | Phase 4 |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 3.8 | SuperAdmin panel — tenant list & CRUD | ✅ | |
+| 3.9 | SuperAdmin panel — user management per tenant | ✅ | |
+| 3.10 | Tenant settings page (clinic profile) | 🔲 | |
+| 3.11 | Onboarding wizard for new tenants | 🔲 | |
+
+---
+
+## 4. Staff
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 4.1 | Create / update / soft-delete staff member | ✅ | |
+| 4.2 | Get by ID / list with search & filter | ✅ | |
+| 4.3 | Staff availability (weekly schedule) | ✅ | |
+| 4.4 | Staff blocked time (leave / holidays) | ✅ | |
+| 4.5 | Provider availability engine (query free slots) | 🔲 | Needed for booking + online portal |
+| 4.6 | Leave management workflow | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 4.7 | Staff list page with search & filter | ✅ | |
+| 4.8 | Create staff drawer | ✅ | |
+| 4.9 | Edit staff drawer | ✅ | |
+| 4.10 | Staff detail / profile page | 🔲 | |
+| 4.11 | Availability schedule UI | 🔲 | |
+
+---
+
+## 5. Patients
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 5.1 | Create / update / soft-delete patient | ✅ | |
+| 5.2 | Get by ID / list with search, filter, pagination | ✅ | |
+| 5.3 | Auto-generated patient number | ✅ | |
+| 5.4 | Medical history | ✅ | |
+| 5.5 | Allergies | ✅ | |
+| 5.6 | Emergency contacts | ✅ | |
+| 5.7 | Dental insurance details | 🔲 | |
+| 5.8 | Patient merge (duplicates) | 🔲 | |
+| 5.9 | Patient portal access (read-only) | 🔲 | Requires `Patient` role |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 5.10 | Patients list page with search & filter | ✅ | |
+| 5.11 | Create patient drawer | ✅ | |
+| 5.12 | Edit patient drawer | ✅ | |
+| 5.13 | Patient detail page (demographics + history) | ✅ | |
+| 5.14 | Appointment history tab on patient detail | 🔲 | |
+| 5.15 | Documents tab on patient detail | 🔲 | Phase 3 |
+| 5.16 | Treatment history tab on patient detail | 🔲 | Phase 3 |
+| 5.17 | Insurance details form | 🔲 | |
+
+---
+
+## 6. Appointments
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 6.1 | Book appointment | ✅ | |
+| 6.2 | List appointments (with date/status/provider/patient filters) | ✅ | |
+| 6.3 | Get appointment by ID | ✅ | |
+| 6.4 | Reschedule appointment | ✅ | |
+| 6.5 | Cancel appointment | ✅ | |
+| 6.6 | Status lifecycle (Scheduled → Confirmed → CheckedIn → InChair → Completed / Cancelled / NoShow) | ✅ | |
+| 6.7 | Appointment types CRUD | ✅ | |
+| 6.8 | Default appointment type seeding per tenant | ✅ | 10 dental types seeded via `AppointmentTypeSeeder` |
+| 6.9 | GET `/appointment-types` endpoint | ✅ | |
+| 6.10 | Conflict detection (overlapping provider bookings) | 🔲 | |
+| 6.11 | Provider availability check before booking | 🔲 | |
+| 6.12 | Buffer time between appointments | 🔲 | |
+| 6.13 | Recurring appointments | 🔲 | |
+| 6.14 | Waiting list | 🔲 | |
+| 6.15 | Cancellation policy enforcement | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 6.16 | Appointments list page (with date/status filters) | ✅ | |
+| 6.17 | Week calendar view | ✅ | Timezone-correct local date grouping |
+| 6.18 | Book appointment drawer | ✅ | Defaults to next 15-min boundary |
+| 6.19 | Appointment type dropdown (seeded) | ✅ | |
+| 6.20 | Reschedule modal | ✅ | |
+| 6.21 | Cancel appointment action | ✅ | |
+| 6.22 | Status actions panel | ✅ | |
+| 6.23 | Day view in calendar | 🔲 | |
+| 6.24 | Month view in calendar | 🔲 | |
+| 6.25 | Drag-to-reschedule on calendar | 🔲 | |
+| 6.26 | Appointment detail side panel / modal | 🔲 | Shows patient name, provider, type |
+| 6.27 | Manage appointment types (admin UI) | 🔲 | CRUD for appointment types per tenant |
+
+---
+
+## 7. Treatments (Phase 3)
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 7.1 | Treatment plan CRUD | 🔲 | |
+| 7.2 | CDT procedure code library | 🔲 | |
+| 7.3 | Per-tooth condition tracking | 🔲 | |
+| 7.4 | SOAP clinical notes | 🔲 | |
+| 7.5 | Treatment status workflow (Draft → Accepted → Completed) | 🔲 | |
+| 7.6 | Link treatments to appointments | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 7.7 | Visual dental chart (clickable, FDI numbering) | 🔲 | |
+| 7.8 | Treatment plan builder UI | 🔲 | |
+| 7.9 | SOAP notes editor | 🔲 | |
+| 7.10 | Treatment history timeline | 🔲 | |
+| 7.11 | PDF export of treatment plan | 🔲 | |
+
+---
+
+## 8. Billing (Phase 4)
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 8.1 | Invoice generation from completed treatments | 🔲 | |
+| 8.2 | Itemised line items + tax | 🔲 | |
+| 8.3 | Payment recording (cash, card, insurance) | 🔲 | |
+| 8.4 | Stripe integration (card payments) | 🔲 | |
+| 8.5 | Insurance claim tracking | 🔲 | |
+| 8.6 | Invoice PDF generation | 🔲 | |
+| 8.7 | Stripe webhook handling | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 8.8 | Invoices list page | 🔲 | |
+| 8.9 | Invoice detail / print view | 🔲 | |
+| 8.10 | Payment modal | 🔲 | |
+| 8.11 | Stripe checkout flow | 🔲 | |
+
+---
+
+## 9. Notifications (Phase 2/4)
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 9.1 | Email provider adapter (AWS SES / SendGrid) | 🔲 | |
+| 9.2 | SMS provider adapter (Twilio) | 🔲 | |
+| 9.3 | Appointment confirmation email | 🔲 | |
+| 9.4 | Appointment reminder (24h + 2h) via Hangfire | 🔲 | |
+| 9.5 | Cancellation / reschedule notification | 🔲 | |
+| 9.6 | Notification template engine (per-tenant customisation) | 🔲 | |
+| 9.7 | Notification delivery log | 🔲 | |
+| 9.8 | Patient opt-out support | 🔲 | |
+| 9.9 | Password reset email | 🔲 | Blocks 2.7 |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 9.10 | Notification preferences page (per patient) | 🔲 | |
+| 9.11 | Notification log view (admin) | 🔲 | |
+
+---
+
+## 10. Documents (Phase 3)
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 10.1 | File upload to S3 | 🔲 | |
+| 10.2 | Signed download URL generation | 🔲 | |
+| 10.3 | Per-patient document list | 🔲 | |
+| 10.4 | Document soft delete | 🔲 | |
+| 10.5 | File type / size validation | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 10.6 | Document upload UI (drag & drop) | 🔲 | |
+| 10.7 | Document list + download on patient detail | 🔲 | |
+
+---
+
+## 11. Reporting (Phase 4)
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 11.1 | Revenue by period query | 🔲 | |
+| 11.2 | Appointment volume & cancellation rate | 🔲 | |
+| 11.3 | Patient demographics breakdown | 🔲 | |
+| 11.4 | Staff utilisation report | 🔲 | |
+| 11.5 | PDF export | 🔲 | |
+| 11.6 | Excel export | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 11.7 | Reporting dashboard with charts (Recharts) | 🔲 | |
+| 11.8 | Date range + filter controls | 🔲 | |
+| 11.9 | Export buttons | 🔲 | |
+
+---
+
+## 12. Frontend Shell & UX
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 12.1 | App shell — sidebar navigation + header | ✅ | |
+| 12.2 | Role-based nav items | ✅ | |
+| 12.3 | React Router v7 lazy-loaded routes | ✅ | |
+| 12.4 | TanStack Query + Axios API client | ✅ | |
+| 12.5 | Login page with brand logo | ✅ | Logo `h-40` above card |
+| 12.6 | Toast / notification feedback (success, error) | 🔲 | No global toast system yet |
+| 12.7 | Confirmation dialogs (delete actions) | 🔲 | Deletes currently fire without confirmation |
+| 12.8 | Empty states (no data illustrations) | 🔲 | Showing plain text fallbacks |
+| 12.9 | Responsive / mobile layout | 🔲 | Desktop-only currently |
+| 12.10 | Dark mode | 🔲 | |
+| 12.11 | Global error boundary | 🔲 | |
+| 12.12 | Loading skeletons (instead of spinners) | 🔲 | |
+| 12.13 | Clinic logo in sidebar header | 🔲 | |
+| 12.14 | User profile dropdown (avatar, name, logout) | 🔲 | Logout is buried |
+| 12.15 | Keyboard shortcuts (e.g. N for new, / for search) | 🔲 | |
+
+---
+
+## 13. Testing
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 13.1 | Patient command/query handler unit tests | 🔄 | File exists, coverage incomplete |
+| 13.2 | Appointment handler unit tests | 🔄 | File exists, coverage incomplete |
+| 13.3 | Staff handler unit tests | 🔄 | File exists |
+| 13.4 | Identity handler unit tests | 🔲 | |
+| 13.5 | Tenant handler unit tests | 🔲 | |
+| 13.6 | Validator unit tests | 🔲 | |
+| 13.7 | Repository integration tests (real DB) | 🔲 | |
+| 13.8 | API integration tests (WebApplicationFactory) | 🔲 | |
+| 13.9 | Playwright end-to-end tests | 🔲 | Phase 5 |
+
+---
+
+## 14. DevOps & Production
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 14.1 | Dockerfile (API) | ✅ | |
+| 14.2 | Dockerfile (frontend nginx) | ✅ | |
+| 14.3 | Docker Compose (local dev) | ✅ | API + PostgreSQL + Redis |
+| 14.4 | GitHub Actions — build + test on PR | 🔲 | |
+| 14.5 | GitHub Actions — push Docker image to ECR on merge | 🔲 | |
+| 14.6 | Terraform — ECS Fargate cluster | 🔲 | |
+| 14.7 | Terraform — RDS PostgreSQL | 🔲 | |
+| 14.8 | Terraform — ElastiCache Redis | 🔲 | |
+| 14.9 | Terraform — S3 + CloudFront (frontend) | 🔲 | |
+| 14.10 | Terraform — Route 53 wildcard subdomain | 🔲 | |
+| 14.11 | RS256 JWT key pair (production) | 🔲 | Dev uses HMAC-SHA256 |
+| 14.12 | Secrets management (AWS Secrets Manager) | 🔲 | |
+| 14.13 | Health check endpoint (`GET /health`) | ✅ | |
+| 14.14 | Structured log shipping to CloudWatch | 🔲 | |
+| 14.15 | OWASP security audit | 🔲 | Phase 5 |
+| 14.16 | Performance testing + query optimisation | 🔲 | Phase 5 |
+
+---
+
+## Next Up — Recommended Priority Order
+
+1. **Toast notifications** (12.6) — every action currently fails silently on success
+2. **Confirmation dialogs** (12.7) — preventing accidental deletes
+3. **Conflict detection on booking** (6.10) — overlapping appointments can be created right now  
+4. **Patient appointment history tab** (5.14) — natural next step after patients + appointments are done
+5. **Appointment detail panel** (6.26) — calendar blocks show no useful info on click
+6. **Manage appointment types admin UI** (6.27) — clinic can't customise types without hitting the DB
+7. **Staff availability UI** (4.11) — schedule is stored but not editable in the UI
+8. **Provider availability engine** (4.5 / 6.11) — prerequisite for online booking
+9. **Notifications module** (9.1–9.9) — appointment reminders are a core clinic need
+10. **Treatments module** (Phase 3) — clinical charting is a differentiator

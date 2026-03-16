@@ -1,4 +1,5 @@
 using PearlDesk.Identity;
+using PearlDesk.Tenants;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
@@ -6,6 +7,7 @@ using Finbuckle.MultiTenant;
 using PearlDesk.Application;
 using PearlDesk.Infrastructure;
 using Serilog;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +21,8 @@ builder.Services.AddApplication(
     typeof(PearlDesk.Identity.Application.Commands.RegisterUserCommand).Assembly,
     typeof(PearlDesk.Staff.Application.StaffMemberResponse).Assembly,
     typeof(PearlDesk.Patients.Application.PatientResponse).Assembly,
-    typeof(PearlDesk.Appointments.Application.AppointmentResponse).Assembly
+    typeof(PearlDesk.Appointments.Application.AppointmentResponse).Assembly,
+    typeof(PearlDesk.Tenants.Application.Commands.CreateTenantCommand).Assembly
 );
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -41,6 +44,7 @@ builder.Services
             typeof(PearlDesk.Staff.Endpoints.StaffCreateEndpoint).Assembly,
             typeof(PearlDesk.Patients.Endpoints.PatientCreateEndpoint).Assembly,
             typeof(PearlDesk.Appointments.Endpoints.AppointmentBookEndpoint).Assembly,
+            typeof(PearlDesk.Tenants.Endpoints.TenantCreateEndpoint).Assembly,
         ];
     })
     .AddAuthenticationJwtBearer(o => o.SigningKey = jwtSigningKey)
@@ -58,6 +62,19 @@ builder.Services.SwaggerDocument(o =>
     };
 });
 
+// CORS — allow the frontend dev server and any origins configured in appsettings
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()));
+
 // Rate limiting per tenant
 builder.Services.AddRateLimiter(options =>
     options.GlobalLimiter = System.Threading.RateLimiting.PartitionedRateLimiter.Create<HttpContext, string>(
@@ -73,12 +90,14 @@ var app = builder.Build();
 
 // Seed roles + SuperAdmin user on startup
 await SuperAdminSeeder.SeedAsync(app.Services);
+await AppointmentTypeSeeder.SeedAsync(app.Services);
 
 // Health check — before any auth middleware
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
    .AllowAnonymous();
 
 app.UseSerilogRequestLogging();
+app.UseCors();
 app.UseRateLimiter();
 app.UseMultiTenant();
 app.UseAuthentication();
@@ -86,6 +105,7 @@ app.UseAuthorization();
 
 app.UseFastEndpoints(c =>
 {
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
     c.Endpoints.RoutePrefix = "api";
     c.Versioning.Prefix = "v";
     c.Versioning.PrependToRoute = true;

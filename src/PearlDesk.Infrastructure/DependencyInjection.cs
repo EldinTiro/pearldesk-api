@@ -2,12 +2,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PearlDesk.Application.Common.Interfaces;
 using PearlDesk.Appointments.Application.Interfaces;
 using PearlDesk.Domain.Identity;
 using PearlDesk.Infrastructure.Persistence;
 using PearlDesk.Infrastructure.Persistence.Repositories;
+using PearlDesk.Infrastructure.Services;
 using PearlDesk.Patients.Application.Interfaces;
 using PearlDesk.Staff.Application.Interfaces;
+using PearlDesk.Tenants.Application.Interfaces;
 namespace PearlDesk.Infrastructure;
 public static class DependencyInjection
 {
@@ -42,6 +45,8 @@ public static class DependencyInjection
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
         services.AddScoped<IAppointmentTypeRepository, AppointmentTypeRepository>();
+        services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<IUserProvisioningService, UserProvisioningService>();
         return services;
     }
 }

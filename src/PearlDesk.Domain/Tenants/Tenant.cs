@@ -33,6 +33,7 @@ public class Tenant
     public void CompleteOnboarding() => OnboardingCompletedAt = DateTime.UtcNow;
     public void Deactivate() => IsActive = false;
     public void Activate() => IsActive = true;
+    public void UpdateName(string name) => Name = name.Trim();
     public void SetStripeCustomer(string customerId) => StripeCustomerId = customerId;
     public void SetStripeSubscription(string subscriptionId) => StripeSubscriptionId = subscriptionId;
     public void SetPlan(string plan, DateTime? expiresAt)

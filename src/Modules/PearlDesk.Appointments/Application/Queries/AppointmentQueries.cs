@@ -14,3 +14,5 @@ public record ListAppointmentsQuery(
     int Page = 1,
     int PageSize = 50) : IRequest<ErrorOr<PagedResult<AppointmentResponse>>>;
 
+public record ListAppointmentTypesQuery : IRequest<ErrorOr<IReadOnlyList<AppointmentTypeResponse>>>;
+

@@ -1,0 +1,49 @@
+using ErrorOr;
+using Microsoft.AspNetCore.Identity;
+using PearlDesk.Application.Common.Interfaces;
+using PearlDesk.Domain.Identity;
+
+namespace PearlDesk.Infrastructure.Services;
+
+public class UserProvisioningService(
+    UserManager<ApplicationUser> userManager) : IUserProvisioningService
+{
+    public async Task<ErrorOr<Guid>> CreateUserAsync(
+        string email,
+        string password,
+        string firstName,
+        string lastName,
+        string role,
+        Guid tenantId,
+        CancellationToken ct = default)
+    {
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing is not null)
+            return Error.Conflict("User.EmailAlreadyExists", $"A user with email '{email}' already exists.");
+
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName,
+            TenantId = tenantId,
+            IsActive = true,
+            EmailConfirmed = true,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        var createResult = await userManager.CreateAsync(user, password);
+        if (!createResult.Succeeded)
+            return createResult.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
+
+        var roleResult = await userManager.AddToRoleAsync(user, role);
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return roleResult.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
+        }
+
+        return user.Id;
+    }
+}

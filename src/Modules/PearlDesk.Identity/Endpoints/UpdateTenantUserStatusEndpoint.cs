@@ -1,0 +1,44 @@
+using FastEndpoints;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+using DomainRoles = PearlDesk.Domain.Identity.Roles;
+using PearlDesk.Domain.Identity;
+using PearlDesk.Identity.Application.Commands;
+
+namespace PearlDesk.Identity.Endpoints;
+
+public class UpdateTenantUserStatusEndpoint(ISender sender, UserManager<ApplicationUser> userManager)
+    : Endpoint<UpdateTenantUserStatusRequest>
+{
+    public override void Configure()
+    {
+        Put("/users/{id}/status");
+        Roles(DomainRoles.ClinicOwner, DomainRoles.ClinicAdmin);
+        Version(1);
+        Summary(s => s.Summary = "Activate or deactivate a user within the caller's clinic");
+    }
+
+    public override async Task HandleAsync(UpdateTenantUserStatusRequest req, CancellationToken ct)
+    {
+        var tidClaim = HttpContext.User.FindFirst("tid")?.Value;
+        if (!Guid.TryParse(tidClaim, out var callerTenantId))
+        {
+            await SendForbiddenAsync(ct);
+            return;
+        }
+
+        var targetId = Route<Guid>("id");
+        var target = await userManager.FindByIdAsync(targetId.ToString());
+        if (target is null || target.TenantId != callerTenantId)
+        {
+            await SendNotFoundAsync(ct);
+            return;
+        }
+
+        var result = await sender.Send(new UpdateUserStatusCommand(targetId, req.IsActive), ct);
+        if (result.IsError) { await SendErrorsAsync(cancellation: ct); return; }
+        await SendNoContentAsync(ct);
+    }
+}
+
+public record UpdateTenantUserStatusRequest(bool IsActive);

@@ -1,0 +1,52 @@
+using FastEndpoints;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+using DomainRoles = PearlDesk.Domain.Identity.Roles;
+using PearlDesk.Domain.Identity;
+using PearlDesk.Identity.Application.Commands;
+
+namespace PearlDesk.Identity.Endpoints;
+
+public class ChangeTenantUserRoleEndpoint(ISender sender, UserManager<ApplicationUser> userManager)
+    : Endpoint<ChangeTenantUserRoleRequest>
+{
+    public override void Configure()
+    {
+        Put("/users/{id}/role");
+        Roles(DomainRoles.ClinicOwner, DomainRoles.ClinicAdmin);
+        Version(1);
+        Summary(s => s.Summary = "Change a user's role within the caller's clinic");
+    }
+
+    public override async Task HandleAsync(ChangeTenantUserRoleRequest req, CancellationToken ct)
+    {
+        var tidClaim = HttpContext.User.FindFirst("tid")?.Value;
+        if (!Guid.TryParse(tidClaim, out var callerTenantId))
+        {
+            await SendForbiddenAsync(ct);
+            return;
+        }
+
+        var targetId = Route<Guid>("id");
+        var target = await userManager.FindByIdAsync(targetId.ToString());
+        if (target is null || target.TenantId != callerTenantId)
+        {
+            await SendNotFoundAsync(ct);
+            return;
+        }
+
+        // Prevent escalation to SuperAdmin via this endpoint
+        if (!DomainRoles.TenantRoles.Contains(req.Role))
+        {
+            AddError(r => r.Role, $"Role must be one of: {string.Join(", ", DomainRoles.TenantRoles)}");
+            await SendErrorsAsync(cancellation: ct);
+            return;
+        }
+
+        var result = await sender.Send(new ChangeUserRoleCommand(targetId, req.Role), ct);
+        if (result.IsError) { await SendErrorsAsync(cancellation: ct); return; }
+        await SendNoContentAsync(ct);
+    }
+}
+
+public record ChangeTenantUserRoleRequest(string Role);

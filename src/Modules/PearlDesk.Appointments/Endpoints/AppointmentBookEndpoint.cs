@@ -23,7 +23,13 @@ public class AppointmentBookEndpoint(ISender sender) : Endpoint<BookAppointmentR
             req.OperatoryId, req.IsNewPatient, req.Source ?? "Staff");
 
         var result = await sender.Send(command, ct);
-        if (result.IsError) { await SendErrorsAsync(cancellation: ct); return; }
+        if (result.IsError)
+        {
+            foreach (var error in result.Errors)
+                AddError(error.Code, error.Description);
+            await SendErrorsAsync(cancellation: ct);
+            return;
+        }
         await SendCreatedAtAsync<AppointmentGetByIdEndpoint>(new { id = result.Value.Id }, result.Value, cancellation: ct);
     }
 }

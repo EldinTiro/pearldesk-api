@@ -14,9 +14,6 @@ public class BookAppointmentCommandValidator : AbstractValidator<BookAppointment
             .NotEmpty()
             .GreaterThan(x => x.StartAt)
             .WithMessage("End time must be after start time.");
-        RuleFor(x => x.StartAt)
-            .GreaterThan(DateTime.UtcNow.AddMinutes(-5))
-            .WithMessage("Cannot book an appointment in the past.");
     }
 }
 

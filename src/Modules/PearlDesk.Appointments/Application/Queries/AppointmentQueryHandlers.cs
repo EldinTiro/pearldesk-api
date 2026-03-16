@@ -5,6 +5,17 @@ using PearlDesk.Appointments.Domain;
 
 namespace PearlDesk.Appointments.Application.Queries;
 
+public class ListAppointmentTypesQueryHandler(IAppointmentTypeRepository repo)
+    : IRequestHandler<ListAppointmentTypesQuery, ErrorOr<IReadOnlyList<AppointmentTypeResponse>>>
+{
+    public async Task<ErrorOr<IReadOnlyList<AppointmentTypeResponse>>> Handle(
+        ListAppointmentTypesQuery query, CancellationToken cancellationToken)
+    {
+        var types = await repo.ListAsync(cancellationToken);
+        return types.Select(AppointmentTypeResponse.FromEntity).ToList();
+    }
+}
+
 public class GetAppointmentByIdQueryHandler(IAppointmentRepository repo)
     : IRequestHandler<GetAppointmentByIdQuery, ErrorOr<AppointmentResponse>>
 {
