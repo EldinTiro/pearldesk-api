@@ -15,6 +15,7 @@ public class Tenant
     public bool IsActive { get; private set; } = true;
     public DateTime? OnboardingCompletedAt { get; private set; }
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public string? LogoBase64 { get; private set; }
 
     private Tenant() { }
 
@@ -41,5 +42,7 @@ public class Tenant
         Plan = plan;
         PlanExpiresAt = expiresAt;
     }
+
+    public void SetLogo(string? logoBase64) => LogoBase64 = logoBase64;
 }
 

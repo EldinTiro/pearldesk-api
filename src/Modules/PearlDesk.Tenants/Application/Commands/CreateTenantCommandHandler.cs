@@ -22,6 +22,7 @@ public class CreateTenantCommandHandler(
 
         var tenant = Tenant.Create(command.Slug, command.Name);
         tenant.SetPlan(command.Plan, null);
+        tenant.SetLogo(command.LogoBase64);
 
         await tenantRepository.AddAsync(tenant, cancellationToken);
 

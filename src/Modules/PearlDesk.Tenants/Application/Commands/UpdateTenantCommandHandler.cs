@@ -15,6 +15,7 @@ public class UpdateTenantCommandHandler(ITenantRepository tenantRepository)
         if (tenant is null) return TenantErrors.NotFound;
 
         tenant.UpdateName(command.Name);
+        tenant.SetLogo(command.LogoBase64);
         await tenantRepository.UpdateAsync(tenant, cancellationToken);
 
         return TenantResponse.FromEntity(tenant);

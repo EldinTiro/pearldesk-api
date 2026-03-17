@@ -9,4 +9,5 @@ public record CreateTenantCommand(
     string Plan,
     string OwnerEmail,
     string OwnerFirstName,
-    string OwnerLastName) : IRequest<ErrorOr<TenantCreatedResponse>>;
+    string OwnerLastName,
+    string? LogoBase64 = null) : IRequest<ErrorOr<TenantCreatedResponse>>;

@@ -10,10 +10,11 @@ public record TenantResponse(
     DateTime? PlanExpiresAt,
     bool IsActive,
     DateTime? OnboardingCompletedAt,
-    DateTime CreatedAt)
+    DateTime CreatedAt,
+    string? LogoBase64)
 {
     public static TenantResponse FromEntity(Tenant t) =>
-        new(t.Id, t.Slug, t.Name, t.Plan, t.PlanExpiresAt, t.IsActive, t.OnboardingCompletedAt, t.CreatedAt);
+        new(t.Id, t.Slug, t.Name, t.Plan, t.PlanExpiresAt, t.IsActive, t.OnboardingCompletedAt, t.CreatedAt, t.LogoBase64);
 }
 
 /// <summary>
@@ -27,8 +28,9 @@ public record TenantCreatedResponse(
     bool IsActive,
     DateTime CreatedAt,
     string OwnerEmail,
-    string TempPassword)
+    string TempPassword,
+    string? LogoBase64)
 {
     public static TenantCreatedResponse FromEntity(Tenant t, string ownerEmail, string tempPassword) =>
-        new(t.Id, t.Slug, t.Name, t.Plan, t.IsActive, t.CreatedAt, ownerEmail, tempPassword);
+        new(t.Id, t.Slug, t.Name, t.Plan, t.IsActive, t.CreatedAt, ownerEmail, tempPassword, t.LogoBase64);
 }

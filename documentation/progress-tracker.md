@@ -1,7 +1,7 @@
 # PearlDesk — Feature Progress Tracker
 
 > Living document. Update as features ship.  
-> Last updated: 2026-03-16
+> Last updated: 2026-03-17
 
 **Legend:** ✅ Done · 🔄 Partial · 🔲 Not started · 🚫 Blocked
 
@@ -23,6 +23,7 @@
 12. [Frontend Shell & UX](#12-frontend-shell--ux)
 13. [Testing](#13-testing)
 14. [DevOps & Production](#14-devops--production)
+15. [AI Assistant — PearlAI (Backlog)](#15-ai-assistant--peariai-backlog)
 
 ---
 
@@ -144,9 +145,9 @@
 | 5.11 | Create patient drawer | ✅ | |
 | 5.12 | Edit patient drawer | ✅ | |
 | 5.13 | Patient detail page (demographics + history) | ✅ | |
-| 5.14 | Appointment history tab on patient detail | 🔲 | |
+| 5.14 | Appointment history tab on patient detail | ✅ | Clickable rows open appointment detail panel |
 | 5.15 | Documents tab on patient detail | 🔲 | Phase 3 |
-| 5.16 | Treatment history tab on patient detail | 🔲 | Phase 3 |
+| 5.16 | Treatment history tab on patient detail | ✅ | `TreatmentPlanTab` — plan list, line items, CDT codes |
 | 5.17 | Insurance details form | 🔲 | |
 
 ---
@@ -181,11 +182,11 @@
 | 6.19 | Appointment type dropdown (seeded) | ✅ | |
 | 6.20 | Reschedule modal | ✅ | |
 | 6.21 | Cancel appointment action | ✅ | |
-| 6.22 | Status actions panel | ✅ | |
+| 6.22 | Status actions panel | ✅ | Quick-advance button inline in list rows (one click per lifecycle step) |
 | 6.23 | Day view in calendar | 🔲 | |
 | 6.24 | Month view in calendar | 🔲 | |
 | 6.25 | Drag-to-reschedule on calendar | 🔲 | |
-| 6.26 | Appointment detail side panel / modal | 🔲 | Shows patient name, provider, type |
+| 6.26 | Appointment detail side panel | ✅ | Patient, provider, type, duration, status + reschedule/cancel actions |
 | 6.27 | Manage appointment types (admin UI) | 🔲 | CRUD for appointment types per tenant |
 
 ---
@@ -195,21 +196,21 @@
 ### Backend
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 7.1 | Treatment plan CRUD | 🔲 | |
-| 7.2 | CDT procedure code library | 🔲 | |
-| 7.3 | Per-tooth condition tracking | 🔲 | |
-| 7.4 | SOAP clinical notes | 🔲 | |
-| 7.5 | Treatment status workflow (Draft → Accepted → Completed) | 🔲 | |
-| 7.6 | Link treatments to appointments | 🔲 | |
+| 7.1 | Treatment plan CRUD | ✅ | Create, update, soft-delete, list per patient |
+| 7.2 | CDT procedure code library | ✅ | Seeded with common dental procedure codes |
+| 7.3 | Per-tooth condition tracking | 🔲 | Deferred — visual dental chart (F2 backlog) |
+| 7.4 | SOAP clinical notes | 🔲 | Deferred — F3 backlog |
+| 7.5 | Treatment status workflow (Draft → Accepted → Completed) | ✅ | |
+| 7.6 | Link treatments to appointments | 🔄 | Plans linked to patient; per-appointment link deferred |
 
 ### Frontend
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 7.7 | Visual dental chart (clickable, FDI numbering) | 🔲 | |
-| 7.8 | Treatment plan builder UI | 🔲 | |
-| 7.9 | SOAP notes editor | 🔲 | |
+| 7.7 | Visual dental chart (clickable, FDI numbering) | 🔲 | Deferred — F2 backlog |
+| 7.8 | Treatment plan builder UI | ✅ | Plan list, add/edit plans, line items with CDT codes and costs |
+| 7.9 | SOAP notes editor | 🔲 | Deferred — F3 backlog |
 | 7.10 | Treatment history timeline | 🔲 | |
-| 7.11 | PDF export of treatment plan | 🔲 | |
+| 7.11 | PDF export of treatment plan | 🔲 | Deferred — F6 backlog |
 
 ---
 
@@ -303,21 +304,26 @@
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 12.1 | App shell — sidebar navigation + header | ✅ | |
+| 12.1 | App shell — sidebar navigation + header | ✅ | Collapsible sidebar |
 | 12.2 | Role-based nav items | ✅ | |
 | 12.3 | React Router v7 lazy-loaded routes | ✅ | |
 | 12.4 | TanStack Query + Axios API client | ✅ | |
 | 12.5 | Login page with brand logo | ✅ | Logo `h-40` above card |
 | 12.6 | Toast / notification feedback (success, error) | 🔲 | No global toast system yet |
-| 12.7 | Confirmation dialogs (delete actions) | 🔲 | Deletes currently fire without confirmation |
+| 12.7 | Confirmation dialogs (delete actions) | 🔲 | Patient delete has modal; staff/appointments don't |
 | 12.8 | Empty states (no data illustrations) | 🔲 | Showing plain text fallbacks |
 | 12.9 | Responsive / mobile layout | 🔲 | Desktop-only currently |
-| 12.10 | Dark mode | 🔲 | |
+| 12.10 | Dark mode | ✅ | Full coverage — all pages/components, class-based Tailwind v4 |
 | 12.11 | Global error boundary | 🔲 | |
 | 12.12 | Loading skeletons (instead of spinners) | 🔲 | |
 | 12.13 | Clinic logo in sidebar header | 🔲 | |
-| 12.14 | User profile dropdown (avatar, name, logout) | 🔲 | Logout is buried |
+| 12.14 | User profile dropdown (avatar, name, logout) | 🔲 | Logout is buried in sidebar footer |
 | 12.15 | Keyboard shortcuts (e.g. N for new, / for search) | 🔲 | |
+| 12.16 | Auto dark mode (time-based: 20:00–06:00, localStorage override) | ✅ | Anti-FOUC script in `index.html`; 60 s live interval in `ThemeContext` |
+| 12.17 | Dashboard — Quick Actions bar (Book Appointment + Register Patient) | ✅ | |
+| 12.18 | Dashboard — Tomorrow stat card + Today by Provider card | ✅ | Provider bars always render all Dentist/Hygienist staff (0-count default) |
+| 12.19 | Dashboard — appointment completion progress bar | ✅ | "X of Y completed" counter in Today's Schedule header |
+| 12.20 | Country code phone picker (`DialPicker`) on Create Patient form | ✅ | Custom dropdown, Unicode flag emoji, 37 countries, Bosnia (+387) default |
 
 ---
 
@@ -362,13 +368,40 @@
 
 ## Next Up — Recommended Priority Order
 
-1. **Toast notifications** (12.6) — every action currently fails silently on success
-2. **Confirmation dialogs** (12.7) — preventing accidental deletes
-3. **Conflict detection on booking** (6.10) — overlapping appointments can be created right now  
-4. **Patient appointment history tab** (5.14) — natural next step after patients + appointments are done
-5. **Appointment detail panel** (6.26) — calendar blocks show no useful info on click
-6. **Manage appointment types admin UI** (6.27) — clinic can't customise types without hitting the DB
-7. **Staff availability UI** (4.11) — schedule is stored but not editable in the UI
-8. **Provider availability engine** (4.5 / 6.11) — prerequisite for online booking
-9. **Notifications module** (9.1–9.9) — appointment reminders are a core clinic need
-10. **Treatments module** (Phase 3) — clinical charting is a differentiator
+1. **Toast notifications** (12.6) — every action currently completes silently; users have no feedback
+2. **Confirmation dialogs** (12.7) — staff/appointment deletes fire immediately with no confirmation
+3. **Conflict detection on booking** (6.10) — overlapping appointments can be created right now
+4. **Manage appointment types admin UI** (6.27) — clinic can't customise types without hitting the DB
+5. **Staff detail / profile page** (4.10) — no drilldown from the staff list
+6. **Staff availability UI** (4.11) — schedule is stored but not editable in the UI
+7. **Provider availability engine** (4.5 / 6.11) — prerequisite for online booking portal
+8. **Notifications module** (9.1–9.9) — appointment reminders are a core clinic need
+9. **Billing module** (Phase 4) — invoices from completed treatment items, Stripe integration
+10. **Production infrastructure** (Phase 5) — Terraform, GitHub Actions CI/CD, security audit
+
+---
+
+## 15. AI Assistant — PearlAI (Backlog)
+
+> Planned feature F8 from `implementation-plan.md`. Not started. Revisit after Phase 5 is complete.
+
+### Backend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 15.1 | `PearlDesk.AI` module scaffold | 🔲 | New module alongside existing ones |
+| 15.2 | Patient context builder service | 🔲 | Aggregates demographics, treatment plans, SOAP notes, appt history, allergies into system prompt |
+| 15.3 | `POST /ai/chat` FastEndpoints endpoint (SSE streaming) | 🔲 | Server-Sent Events for real-time response streaming |
+| 15.4 | AI provider abstraction (OpenAI / Azure OpenAI / Ollama) | 🔲 | Configurable per tenant |
+| 15.5 | Per-tenant AI opt-in compliance gate | 🔲 | No PII sent to third parties without explicit tenant consent |
+| 15.6 | Conversation history in Redis (session TTL, not persisted to DB) | 🔲 | |
+| 15.7 | Rate limiting per tenant + per user (token cost control) | 🔲 | |
+| 15.8 | AI audit log (prompt hash + response hash, no PII stored) | 🔲 | |
+
+### Frontend
+| # | Item | Status | Notes |
+|---|---|---|---|
+| 15.9 | Floating chat button on patient detail page | 🔲 | |
+| 15.10 | Expandable AI chat side panel with message history | 🔲 | |
+| 15.11 | Streaming text rendering (SSE → real-time typing effect) | 🔲 | |
+| 15.12 | Quick-action prompt chips ("Summarise history", "Draft SOAP note", "Check contraindications") | 🔲 | |
+| 15.13 | PearlAI settings page — enable/disable, provider selection (admin only) | 🔲 | |

@@ -11,6 +11,7 @@ using PearlDesk.Infrastructure.Services;
 using PearlDesk.Patients.Application.Interfaces;
 using PearlDesk.Staff.Application.Interfaces;
 using PearlDesk.Tenants.Application.Interfaces;
+using PearlDesk.Treatments.Application.Interfaces;
 namespace PearlDesk.Infrastructure;
 public static class DependencyInjection
 {
@@ -46,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
         services.AddScoped<IAppointmentTypeRepository, AppointmentTypeRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<ITreatmentPlanRepository, TreatmentPlanRepository>();
         services.AddScoped<IUserProvisioningService, UserProvisioningService>();
         return services;
     }

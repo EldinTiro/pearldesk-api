@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PearlDesk.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using PearlDesk.Infrastructure.Persistence;
 namespace PearlDesk.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260316075302_AddTenantLogo")]
+    partial class AddTenantLogo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1040,109 +1043,6 @@ namespace PearlDesk.Infrastructure.Migrations
                     b.ToTable("staff_members", (string)null);
                 });
 
-            modelBuilder.Entity("PearlDesk.Treatments.Domain.TreatmentPlan", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "PatientId");
-
-                    b.ToTable("treatment_plans", (string)null);
-                });
-
-            modelBuilder.Entity("PearlDesk.Treatments.Domain.TreatmentPlanItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CdtCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<decimal>("Fee")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Surface")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("ToothNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TreatmentPlanId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TreatmentPlanId");
-
-                    b.HasIndex("TenantId", "TreatmentPlanId");
-
-                    b.ToTable("treatment_plan_items", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("PearlDesk.Domain.Identity.ApplicationRole", null)
@@ -1249,15 +1149,6 @@ namespace PearlDesk.Infrastructure.Migrations
                     b.Navigation("StaffMember");
                 });
 
-            modelBuilder.Entity("PearlDesk.Treatments.Domain.TreatmentPlanItem", b =>
-                {
-                    b.HasOne("PearlDesk.Treatments.Domain.TreatmentPlan", null)
-                        .WithMany("Items")
-                        .HasForeignKey("TreatmentPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("PearlDesk.Patients.Domain.Patient", b =>
                 {
                     b.Navigation("Allergies");
@@ -1272,11 +1163,6 @@ namespace PearlDesk.Infrastructure.Migrations
                     b.Navigation("Availabilities");
 
                     b.Navigation("BlockedTimes");
-                });
-
-            modelBuilder.Entity("PearlDesk.Treatments.Domain.TreatmentPlan", b =>
-                {
-                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

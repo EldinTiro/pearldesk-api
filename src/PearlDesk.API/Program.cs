@@ -22,7 +22,8 @@ builder.Services.AddApplication(
     typeof(PearlDesk.Staff.Application.StaffMemberResponse).Assembly,
     typeof(PearlDesk.Patients.Application.PatientResponse).Assembly,
     typeof(PearlDesk.Appointments.Application.AppointmentResponse).Assembly,
-    typeof(PearlDesk.Tenants.Application.Commands.CreateTenantCommand).Assembly
+    typeof(PearlDesk.Tenants.Application.Commands.CreateTenantCommand).Assembly,
+    typeof(PearlDesk.Treatments.Application.TreatmentPlanResponse).Assembly
 );
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -45,6 +46,7 @@ builder.Services
             typeof(PearlDesk.Patients.Endpoints.PatientCreateEndpoint).Assembly,
             typeof(PearlDesk.Appointments.Endpoints.AppointmentBookEndpoint).Assembly,
             typeof(PearlDesk.Tenants.Endpoints.TenantCreateEndpoint).Assembly,
+            typeof(PearlDesk.Treatments.Endpoints.TreatmentPlanCreateEndpoint).Assembly,
         ];
     })
     .AddAuthenticationJwtBearer(o => o.SigningKey = jwtSigningKey)

@@ -8,6 +8,7 @@ using PearlDesk.Domain.Identity;
 using PearlDesk.Domain.Tenants;
 using PearlDesk.Patients.Domain;
 using PearlDesk.Staff.Domain;
+using PearlDesk.Treatments.Domain;
 
 namespace PearlDesk.Infrastructure.Persistence;
 
@@ -34,6 +35,10 @@ public class ApplicationDbContext(
     // Appointments
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<AppointmentType> AppointmentTypes => Set<AppointmentType>();
+
+    // Treatments
+    public DbSet<TreatmentPlan> TreatmentPlans => Set<TreatmentPlan>();
+    public DbSet<TreatmentPlanItem> TreatmentPlanItems => Set<TreatmentPlanItem>();
 
     private Guid? CurrentTenantId =>
         Guid.TryParse(multiTenantContextAccessor.MultiTenantContext?.TenantInfo?.Identifier, out var id)

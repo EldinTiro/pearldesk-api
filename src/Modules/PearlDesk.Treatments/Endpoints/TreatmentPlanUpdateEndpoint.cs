@@ -1,0 +1,40 @@
+using FastEndpoints;
+using MediatR;
+using PearlDesk.Treatments.Application;
+using PearlDesk.Treatments.Application.Commands;
+using PearlDesk.Treatments.Domain;
+
+namespace PearlDesk.Treatments.Endpoints;
+
+public record UpdateTreatmentPlanRequest(
+    string Title,
+    string? Notes,
+    TreatmentPlanStatus Status);
+
+public class TreatmentPlanUpdateEndpoint(ISender sender)
+    : Endpoint<UpdateTreatmentPlanRequest, TreatmentPlanResponse>
+{
+    public override void Configure()
+    {
+        Put("/treatment-plans/{id}");
+        Roles("ClinicOwner", "ClinicAdmin", "Dentist", "Hygienist", "SuperAdmin");
+        Version(1);
+        Summary(s => s.Summary = "Update a treatment plan");
+    }
+
+    public override async Task HandleAsync(UpdateTreatmentPlanRequest req, CancellationToken ct)
+    {
+        var id = Route<Guid>("id");
+
+        var command = new UpdateTreatmentPlanCommand(id, req.Title, req.Notes, req.Status);
+        var result = await sender.Send(command, ct);
+
+        if (result.IsError)
+        {
+            await SendErrorsAsync(cancellation: ct);
+            return;
+        }
+
+        await SendOkAsync(result.Value, ct);
+    }
+}

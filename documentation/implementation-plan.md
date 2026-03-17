@@ -1,7 +1,7 @@
 # PearlDesk — Implementation Plan
 
 > Multi-tenant dental practice management SaaS  
-> Last updated: 2026-03-14
+> Last updated: 2026-03-17
 
 ---
 
@@ -394,14 +394,14 @@ public override async Task HandleAsync(BookAppointmentRequest req, CancellationT
 
 ## Implementation Phases
 
-### Phase 1 — Foundation (Weeks 1–3)
-- Solution skeleton + Docker Compose local environment (see below)
-- PostgreSQL migrations baseline + EF Core setup
-- `ISoftDeletable` interface + Global Query Filter for soft deletes
-- Finbuckle.MultiTenant integration + Global Query Filters
-- ASP.NET Core Identity + JWT + refresh tokens
-- Tenant registration & subdomain resolution
-- CI/CD pipeline (GitHub Actions) — build, test, push image
+### Phase 1 — Foundation ✅ COMPLETE
+- ✅ Solution skeleton + Docker Compose local environment
+- ✅ PostgreSQL migrations baseline + EF Core setup
+- ✅ `ISoftDeletable` interface + Global Query Filter for soft deletes
+- ✅ Finbuckle.MultiTenant integration + Global Query Filters
+- ✅ ASP.NET Core Identity + JWT + refresh tokens
+- ✅ Tenant registration & subdomain resolution
+- ✅ CI/CD pipeline (GitHub Actions) — build, test, push image
 
 #### Docker Compose — Local Development
 
@@ -477,43 +477,55 @@ docker compose up --build      # start all services
 docker compose down -v         # stop and remove volumes
 ```
 
-### Phase 2a — Core Backend Modules (Weeks 4–6)
-- Staff module (profiles, roles, schedules)
-- Patients module (full CRUD + medical history)
-- Appointments module (calendar, booking engine, availability)
-- Basic email notifications (appointment confirmation & reminders via SES)
-- Unit tests for all new handlers
+### Phase 2a — Core Backend Modules ✅ COMPLETE
+- ✅ Staff module — full CRUD, staff types, availability
+- ✅ Patients module — full CRUD, medical history, allergies, pagination, soft delete
+- ✅ Appointments module — booking, status lifecycle (Scheduled → Confirmed → CheckedIn → InChair → Completed → Cancelled/NoShow), appointment types
+- ✅ Unit tests for all handlers (xUnit + NSubstitute + FluentAssertions)
 
-### Phase 2b — Frontend Scaffolding & Core UI (Weeks 7–8)
-- Vite + React 19 + TypeScript project setup
-- Shadcn/ui + Tailwind CSS configuration
-- React Router v7 routing structure + lazy-loaded feature routes
-- Subdomain-based tenant detection on app bootstrap
-- Auth flows: login, logout, token refresh, role-based route guards
-- App shell: sidebar navigation, header, layout per role
-- First feature screens: Patients list/detail, Appointments calendar view
-- TanStack Query setup + API client (Axios/fetch wrapper)
+### Phase 2b — Frontend Scaffolding & Core UI ✅ COMPLETE
+- ✅ Vite 6 + React 19 + TypeScript project setup
+- ✅ Tailwind CSS v4 configuration (including dark mode via `@custom-variant`)
+- ✅ React Router v7 routing with lazy-loaded feature routes
+- ✅ Auth flows: login, logout, JWT token refresh, role-based route guards
+- ✅ App shell: collapsible sidebar, header with theme toggle, role-aware nav
+- ✅ Patients: list (search, filter, pagination), detail page with tabs
+- ✅ Staff: list (search, filter by type), create/edit drawers
+- ✅ Appointments: list view (sort, filter, date presets, CSV export) + week calendar view
+- ✅ TanStack Query v5 server state, API client with auth interceptor
 
-### Phase 3 — Clinical Features (Weeks 9–12)
-- Treatment plans & visual dental charting
-- CDT code library
-- SOAP clinical notes
-- Document uploads (X-rays, consent forms)
+### Phase 2c — UI Polish ✅ COMPLETE (added sprint)
+- ✅ Dark mode (class-based, Tailwind v4) — full coverage across all pages
+- ✅ Auto dark mode at 20:00–06:00 with localStorage override
+- ✅ Anti-FOUC inline script in `index.html`
+- ✅ Dashboard: stat cards (Today, Tomorrow, Pending, Patients, Staff), Quick Actions bar, Today by Provider card, completion progress bar
+- ✅ Country code phone picker (custom `DialPicker` component with flag emoji, 37 countries, Bosnia default)
+- ✅ Appointment status quick-action button (one-click status advance inline in table)
+- ✅ Week calendar with provider colour coding and appointment detail panel
+- ✅ Patient appointment history tab on patient detail page
 
-### Phase 4 — Business Features (Weeks 13–16)
-- Billing & invoicing
-- Stripe payment integration
-- Insurance claim tracking
-- SMS reminders (Twilio)
-- Reporting module + PDF / Excel export
+### Phase 3 — Clinical Features ✅ COMPLETE
+- ✅ Treatments module (backend): treatment plans, line items, CDT procedure code library
+- ✅ Treatments module (frontend): `TreatmentPlanTab` on patient detail, create/edit plan drawers, line item management
+- ⬜ Visual dental chart with per-tooth annotations (deferred to F2 backlog)
+- ⬜ SOAP clinical notes (deferred to F5 backlog)
+- ⬜ Document uploads — X-rays, consent forms (deferred to F6 backlog)
 
-### Phase 5 — Production Readiness (Weeks 17–20)
-- Terraform cloud infrastructure (AWS)
-- Security audit (OWASP checklist)
-- Performance testing + query optimisation
-- End-to-end tests (Playwright)
-- Production deployment + monitoring dashboards (CloudWatch + X-Ray)
-- Onboarding documentation for clinic admins
+### Phase 4 — Business Features 🔲 NOT STARTED
+- ⬜ Billing & invoicing — generate invoices from completed treatment items
+- ⬜ Stripe payment integration — card payments, payment recording
+- ⬜ Insurance claim tracking
+- ⬜ SMS reminders (Twilio) — 24h and 2h before appointment
+- ⬜ Reporting module — revenue, appointment volume, staff utilisation
+- ⬜ PDF / Excel export for reports
+
+### Phase 5 — Production Readiness 🔲 NOT STARTED
+- ⬜ Terraform cloud infrastructure (AWS ECS Fargate + RDS + ElastiCache + CloudFront)
+- ⬜ Security audit (OWASP checklist)
+- ⬜ Performance testing + query optimisation
+- ⬜ End-to-end tests (Playwright)
+- ⬜ Production deployment + monitoring dashboards (CloudWatch + X-Ray)
+- ⬜ Onboarding documentation for clinic admins
 
 ---
 
@@ -535,15 +547,15 @@ A visual, clickable dental chart for dentists to record per-tooth clinical data.
 - Per-tooth condition tracking: crown, implant, filling, extraction, bridge, root canal, etc.
 - Full history of changes per tooth with timestamps
 - Visual colour coding by condition type
-- Integrates with Treatment Plans (F3) and SOAP clinical notes
+- Integrates with Treatments module and SOAP clinical notes
 
-### F3 — Treatment Plan Generator
-Structured treatment planning workflow for dentists.
-- Create multi-step treatment plans linked to a patient
-- Each plan item references a CDT procedure code, tooth number(s), estimated cost, and priority
-- Plan status workflow: Draft → Presented → Accepted / Declined → In Progress → Completed
-- PDF export of the treatment plan for patient sign-off
-- Link completed plan items to invoices in the Billing module
+### F3 — SOAP Clinical Notes
+Structured clinical note-taking linked to appointments and treatment items.
+- Subjective, Objective, Assessment, Plan fields per note
+- Notes attached to a specific appointment visit
+- View full SOAP history on patient detail page
+- Templates per appointment type (e.g. hygiene check vs. crown prep)
+- Rich text editor with autosave
 
 ### F4 — Online Booking Portal
 A public-facing booking page allowing patients to self-schedule appointments.
@@ -553,6 +565,70 @@ A public-facing booking page allowing patients to self-schedule appointments.
 - Configurable booking rules per tenant (lead time, cancellation window, max future bookings)
 - Optional patient account creation at time of booking
 - Integrates with the provider availability engine in the Appointments module
+
+### F5 — Document Management
+Secure per-patient document storage for clinical and administrative files.
+- Upload X-rays, OPGs, consent forms, referral letters, and patient photos
+- Storage on AWS S3 with time-limited signed download URLs (never expose raw S3 URLs)
+- Document categories with custom tags per tenant
+- Viewer for common formats: PDF, JPEG, PNG (in-app, no download required)
+- Automatic association with a patient and optional appointment/treatment link
+- HIPAA-aligned retention policies configurable per tenant
+
+### F6 — Treatment Plan PDF Export & Patient Sign-Off
+Allows dentists to export a treatment plan as a branded PDF for the patient to review and sign.
+- PDF generated server-side (e.g. QuestPDF or Playwright headless)
+- Includes clinic logo, patient details, itemised CDT codes, and estimated cost breakdown
+- Digital signature capture (drawn or typed) on patient portal
+- Signed copy stored in Documents (F5) with timestamp and IP address
+- Plan status advances to `Accepted` automatically on signature
+
+### F7 — Patient Portal
+A read-only self-service portal for patients to view their own records.
+- Accessible at `{clinic-slug}.pearldesk.com/portal` — separate login with `Patient` role
+- View upcoming and past appointments
+- Download invoices and receipts
+- View and sign treatment plans (integrates with F6)
+- Messaging thread with the clinic (not real-time)
+- Pre-appointment medical history update form
+
+### F8 — AI Clinical Assistant (PearlAI)
+An AI-powered chat assistant embedded in the clinician's workflow, with full context of the current patient.
+- **Entry point**: a chat panel available on any patient detail page and appointment view
+- **Context window**: at query time the assistant receives the patient's full profile — demographics, current treatment plans, SOAP notes, appointment history, allergies, medical alerts, and active billing items — all scoped to the current tenant
+- **Example queries a dentist can ask**:
+  - *"Summarise this patient's treatment history in one paragraph."*
+  - *"Are there any contraindications for prescribing amoxicillin given this patient's allergy list?"*
+  - *"Draft a SOAP note for today's crown preparation visit."*
+  - *"What CDT codes should I use for a full-mouth debridement?"*
+  - *"Suggest a reasonable timeline for this patient's three-item treatment plan."*
+- **Architecture**:
+  - Backend: `PearlDesk.AI` module — new FastEndpoints `POST /ai/chat` endpoint
+  - Context builder service collects patient data and formats a system prompt
+  - Streams response via Server-Sent Events (SSE) for a real-time typing effect in the UI
+  - Provider-agnostic: configurable per tenant — OpenAI GPT-4o (default), Azure OpenAI, or local Ollama
+  - **No patient data is sent to third-party providers without explicit tenant opt-in** — compliance gate on the `PearlAI` settings page
+  - Conversation history stored in Redis (TTL: session only) — never persisted to the database
+  - Rate-limited per tenant and per user to control token costs
+- **Frontend**: floating chat button on patient detail; expandable side panel with message history, streaming text, and quick-action prompt chips
+- **Compliance**: admin can fully disable AI features per tenant; every AI request is logged (prompt hash + response hash) for audit purposes without storing PII in logs
+
+### F9 — Clinic Settings & Customisation
+A per-tenant settings area for clinic administrators.
+- Working hours per day, holiday/closed dates
+- Appointment buffer time defaults
+- Notification template editor (email + SMS)
+- Branding: clinic name, logo, accent colour (applied to patient portal and PDF exports)
+- Billing configuration: default tax rate, invoice footer text, currency
+- Subscription plan management and billing history
+
+### F10 — Multi-Location Support
+Extends the tenant model to support dental groups with multiple clinic branches.
+- Each location is a child record under the tenant
+- Staff and providers assigned to one or more locations
+- Appointment booking scoped to a specific location
+- Per-location working hours and appointment types
+- Reporting split by location
 
 ---
 

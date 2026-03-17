@@ -1,0 +1,48 @@
+using FastEndpoints;
+using MediatR;
+using PearlDesk.Treatments.Application;
+using PearlDesk.Treatments.Application.Queries;
+using PearlDesk.Treatments.Domain;
+
+namespace PearlDesk.Treatments.Endpoints;
+
+public class TreatmentPlanListEndpoint(ISender sender)
+    : EndpointWithoutRequest<PagedResult<TreatmentPlanResponse>>
+{
+    public override void Configure()
+    {
+        Get("/patients/{patientId}/treatment-plans");
+        Roles("ClinicOwner", "ClinicAdmin", "Dentist", "Hygienist", "Receptionist", "SuperAdmin");
+        Version(1);
+        Summary(s => s.Summary = "List treatment plans for a patient");
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var patientId = Route<Guid>("patientId");
+        var statusStr = Query<string?>("status", isRequired: false);
+        var page = Query<int>("page", isRequired: false);
+        var pageSize = Query<int>("pageSize", isRequired: false);
+
+        TreatmentPlanStatus? status = null;
+        if (!string.IsNullOrWhiteSpace(statusStr) &&
+            Enum.TryParse<TreatmentPlanStatus>(statusStr, ignoreCase: true, out var parsed))
+            status = parsed;
+
+        var query = new ListTreatmentPlansQuery(
+            patientId,
+            status,
+            page > 0 ? page : 1,
+            pageSize > 0 ? pageSize : 20);
+
+        var result = await sender.Send(query, ct);
+
+        if (result.IsError)
+        {
+            await SendErrorsAsync(cancellation: ct);
+            return;
+        }
+
+        await SendOkAsync(result.Value, ct);
+    }
+}

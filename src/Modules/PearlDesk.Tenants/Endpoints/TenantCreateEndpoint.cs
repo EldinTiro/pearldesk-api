@@ -20,7 +20,8 @@ public class TenantCreateEndpoint(ISender sender) : Endpoint<CreateTenantRequest
     {
         var command = new CreateTenantCommand(
             req.Slug, req.Name, req.Plan,
-            req.OwnerEmail, req.OwnerFirstName, req.OwnerLastName);
+            req.OwnerEmail, req.OwnerFirstName, req.OwnerLastName,
+            req.LogoBase64);
 
         var result = await sender.Send(command, ct);
         if (result.IsError) { await SendErrorsAsync(cancellation: ct); return; }
@@ -36,4 +37,5 @@ public record CreateTenantRequest(
     string Plan,
     string OwnerEmail,
     string OwnerFirstName,
-    string OwnerLastName);
+    string OwnerLastName,
+    string? LogoBase64 = null);

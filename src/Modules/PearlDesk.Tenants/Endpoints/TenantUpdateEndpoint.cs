@@ -19,10 +19,10 @@ public class TenantUpdateEndpoint(ISender sender) : Endpoint<UpdateTenantRequest
     public override async Task HandleAsync(UpdateTenantRequest req, CancellationToken ct)
     {
         var id = Route<Guid>("id");
-        var result = await sender.Send(new UpdateTenantCommand(id, req.Name), ct);
+        var result = await sender.Send(new UpdateTenantCommand(id, req.Name, req.LogoBase64), ct);
         if (result.IsError) { await SendErrorsAsync(cancellation: ct); return; }
         await SendOkAsync(result.Value, ct);
     }
 }
 
-public record UpdateTenantRequest(string Name);
+public record UpdateTenantRequest(string Name, string? LogoBase64 = null);
