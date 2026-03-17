@@ -145,7 +145,7 @@ POST http://localhost:5000/api/v1/auth/register
 Content-Type: application/json
 
 {
-  "email": "superadmin@pearldesk.local",
+  "email": "superadmin@DentFlow.local",
   "password": "SuperAdmin123!@#",
   "firstName": "Super",
   "lastName": "Admin",

@@ -1,4 +1,4 @@
-﻿### PearlDesk Appointments API Tests
+﻿### DentFlow Appointments API Tests
 ### Base URL: http://localhost:5199
 ### All endpoints require Authorization header (JWT Bearer token)
 

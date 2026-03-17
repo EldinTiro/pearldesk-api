@@ -1,6 +1,6 @@
-# PearlDesk API — Copilot Instructions
+﻿# DentFlow API — Copilot Instructions
 
-This is the **PearlDesk API**: a multi-tenant SaaS dental practice management backend.
+This is the **DentFlow API**: a multi-tenant SaaS dental practice management backend.
 Always apply every rule in this file. Never deviate without an explicit user instruction.
 
 ---
@@ -15,7 +15,7 @@ Always apply every rule in this file. Never deviate without an explicit user ins
 | Error handling | ErrorOr (`ErrorOr<T>` on all handler return types) |
 | ORM | EF Core 8 + Npgsql (PostgreSQL) |
 | Auth | ASP.NET Core Identity + JWT Bearer (HMAC-SHA256 dev, RS256 prod) |
-| Multi-tenancy | Finbuckle.MultiTenant — subdomain strategy (`{slug}.pearldesk.com`) |
+| Multi-tenancy | Finbuckle.MultiTenant — subdomain strategy (`{slug}.DentFlow.com`) |
 | Logging | Serilog |
 | Caching | Redis (optional, configured via `Redis:ConnectionString`) |
 | Testing | xUnit + FluentAssertions + NSubstitute |
@@ -26,23 +26,23 @@ Always apply every rule in this file. Never deviate without an explicit user ins
 
 ```
 src/
-  PearlDesk.API/            # Entry point: FastEndpoints, middleware, DI composition
-  PearlDesk.Application/    # MediatR pipeline behaviors, shared application contracts
-  PearlDesk.Domain/         # Entities, enums, errors — no external dependencies
-  PearlDesk.Infrastructure/ # EF Core DbContext, repositories, migrations
+  DentFlow.API/            # Entry point: FastEndpoints, middleware, DI composition
+  DentFlow.Application/    # MediatR pipeline behaviors, shared application contracts
+  DentFlow.Domain/         # Entities, enums, errors — no external dependencies
+  DentFlow.Infrastructure/ # EF Core DbContext, repositories, migrations
   Modules/
-    PearlDesk.Identity/     # Registration, login, JWT issuance
-    PearlDesk.Patients/     # Patient records
-    PearlDesk.Staff/        # Staff members, availability
-    PearlDesk.Appointments/ # Appointment scheduling and status lifecycle
-    PearlDesk.Tenants/      # Tenant management
-    PearlDesk.Billing/      # (planned)
-    PearlDesk.Treatments/   # (planned)
-    PearlDesk.Notifications/# (planned)
-    PearlDesk.Documents/    # (planned)
-    PearlDesk.Reporting/    # (planned)
+    DentFlow.Identity/     # Registration, login, JWT issuance
+    DentFlow.Patients/     # Patient records
+    DentFlow.Staff/        # Staff members, availability
+    DentFlow.Appointments/ # Appointment scheduling and status lifecycle
+    DentFlow.Tenants/      # Tenant management
+    DentFlow.Billing/      # (planned)
+    DentFlow.Treatments/   # (planned)
+    DentFlow.Notifications/# (planned)
+    DentFlow.Documents/    # (planned)
+    DentFlow.Reporting/    # (planned)
 tests/
-  PearlDesk.<Module>.Tests/ # Unit tests per module (xUnit)
+  DentFlow.<Module>.Tests/ # Unit tests per module (xUnit)
 ```
 
 **Dependency direction**: `API → Infrastructure → Application → Domain`
@@ -55,7 +55,7 @@ Modules depend on `Application` and `Domain` only. Modules never reference each 
 Every module follows this exact folder layout:
 
 ```
-PearlDesk.<Module>/
+DentFlow.<Module>/
   Domain/
     <Entity>.cs               # Domain model — inherits TenantAuditableEntity
     <Entity>Errors.cs         # Static ErrorOr error definitions
@@ -86,14 +86,14 @@ PearlDesk.<Module>/
     <Entity>UpdateEndpoint.cs
     <Entity>DeleteEndpoint.cs
   DependencyInjection.cs      # Module-level DI (usually empty — infra wires repos)
-  PearlDesk.<Module>.csproj
+  DentFlow.<Module>.csproj
 ```
 
 ---
 
 ## Domain Model Rules
 
-1. All tenant-scoped entities **must** inherit `TenantAuditableEntity` (from `PearlDesk.Domain.Common`).
+1. All tenant-scoped entities **must** inherit `TenantAuditableEntity` (from `DentFlow.Domain.Common`).
 2. All properties have **`private set`** — they are never assigned from outside the class.
 3. Use a **static factory method** `Entity.Create(...)` instead of a public constructor.
 4. Any domain method that mutates state **must call `SetUpdated()`** at the end.
@@ -285,8 +285,8 @@ if (existing is not null) return PatientErrors.AlreadyExists;
 ## Repository Pattern
 
 **Interface** lives in the module: `Application/Interfaces/I<Entity>Repository.cs`
-**Implementation** lives in: `PearlDesk.Infrastructure/Persistence/Repositories/<Entity>Repository.cs`
-**Registration** in: `PearlDesk.Infrastructure/DependencyInjection.cs`
+**Implementation** lives in: `DentFlow.Infrastructure/Persistence/Repositories/<Entity>Repository.cs`
+**Registration** in: `DentFlow.Infrastructure/DependencyInjection.cs`
 
 ```csharp
 // Interface (module)
@@ -317,13 +317,13 @@ public class PatientRepository(ApplicationDbContext dbContext) : IPatientReposit
 - **Never** manually filter queries by `TenantId`. The EF Core global query filter on `ApplicationDbContext` handles tenant isolation automatically for all `TenantAuditableEntity` types.
 - **Never** manually filter out soft-deleted records. The global filter handles `IsDeleted == false` automatically.
 - When creating a new entity that requires a tenant, call `entity.SetTenant(tenantId)` where `tenantId` comes from `IMultiTenantContextAccessor`.
-- The tenant is resolved from the subdomain (`{slug}.pearldesk.com`) by Finbuckle before any request hits a handler.
+- The tenant is resolved from the subdomain (`{slug}.DentFlow.com`) by Finbuckle before any request hits a handler.
 
 ---
 
 ## Authorization & Roles
 
-Roles are defined in `PearlDesk.Domain.Identity.Roles`:
+Roles are defined in `DentFlow.Domain.Identity.Roles`:
 - `SuperAdmin` — global platform admin
 - `ClinicOwner` — tenant owner, full access within tenant
 - `ClinicAdmin` — clinic admin
@@ -332,7 +332,7 @@ Roles are defined in `PearlDesk.Domain.Identity.Roles`:
 - `BillingStaff` — billing only
 - `ReadOnly` — read-only access
 
-Always specify roles on endpoints using `Roles(...)` in `Configure()`. Always import `Roles` from `PearlDesk.Domain.Identity`.
+Always specify roles on endpoints using `Roles(...)` in `Configure()`. Always import `Roles` from `DentFlow.Domain.Identity`.
 
 ---
 
@@ -342,7 +342,7 @@ Always specify roles on endpoints using `Roles(...)` in `Configure()`. Always im
 2. `ValidationBehavior` — runs FluentValidation; short-circuits with `ErrorOr` validation errors
 3. `PerformanceBehavior` — logs a warning if request takes > 500 ms
 
-These are registered in `PearlDesk.Application/DependencyInjection.cs` and apply to all handlers automatically.
+These are registered in `DentFlow.Application/DependencyInjection.cs` and apply to all handlers automatically.
 
 ---
 
@@ -380,20 +380,20 @@ The full product vision is documented in `documentation/implementation-plan.md`.
 
 | Module | Status | Notes |
 |---|---|---|
-| `PearlDesk.Identity` | ✅ Implemented | Login, register, JWT, roles |
-| `PearlDesk.Tenants` | ✅ Implemented | Tenant management |
-| `PearlDesk.Staff` | ✅ Implemented | Staff profiles, availability |
-| `PearlDesk.Patients` | ✅ Implemented | Full CRUD, medical history, allergies |
-| `PearlDesk.Appointments` | ✅ Implemented | Booking, status lifecycle |
-| `PearlDesk.Treatments` | 🔲 Planned (Phase 3) | Treatment plans, CDT codes, dental chart, SOAP notes |
-| `PearlDesk.Billing` | 🔲 Planned (Phase 4) | Invoicing, Stripe payments, insurance claims |
-| `PearlDesk.Notifications` | 🔲 Planned (Phase 2/4) | Email (SES/SendGrid) + SMS (Twilio), Hangfire reminders |
-| `PearlDesk.Documents` | 🔲 Planned (Phase 3) | S3 file uploads, signed URLs, per-patient docs |
-| `PearlDesk.Reporting` | 🔲 Planned (Phase 4) | Revenue, utilisation, PDF/Excel export |
+| `DentFlow.Identity` | ✅ Implemented | Login, register, JWT, roles |
+| `DentFlow.Tenants` | ✅ Implemented | Tenant management |
+| `DentFlow.Staff` | ✅ Implemented | Staff profiles, availability |
+| `DentFlow.Patients` | ✅ Implemented | Full CRUD, medical history, allergies |
+| `DentFlow.Appointments` | ✅ Implemented | Booking, status lifecycle |
+| `DentFlow.Treatments` | 🔲 Planned (Phase 3) | Treatment plans, CDT codes, dental chart, SOAP notes |
+| `DentFlow.Billing` | 🔲 Planned (Phase 4) | Invoicing, Stripe payments, insurance claims |
+| `DentFlow.Notifications` | 🔲 Planned (Phase 2/4) | Email (SES/SendGrid) + SMS (Twilio), Hangfire reminders |
+| `DentFlow.Documents` | 🔲 Planned (Phase 3) | S3 file uploads, signed URLs, per-patient docs |
+| `DentFlow.Reporting` | 🔲 Planned (Phase 4) | Revenue, utilisation, PDF/Excel export |
 
 ### Roles — Current vs Planned
 
-Roles currently implemented in `PearlDesk.Domain.Identity.Roles`:
+Roles currently implemented in `DentFlow.Domain.Identity.Roles`:
 - `SuperAdmin`, `ClinicOwner`, `ClinicAdmin`, `Dentist`, `Hygienist`, `Receptionist`, `BillingStaff`, `ReadOnly`
 
 Roles **planned but not yet added** (do not use until explicitly implemented):

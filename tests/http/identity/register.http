@@ -50,7 +50,7 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "email": "superadmin@pearldesk.local",
+  "email": "superadmin@DentFlow.local",
   "password": "SuperAdmin123!@#",
   "firstName": "Super",
   "lastName": "Admin",

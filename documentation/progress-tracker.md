@@ -1,4 +1,4 @@
-# PearlDesk — Feature Progress Tracker
+﻿# DentFlow — Feature Progress Tracker
 
 > Living document. Update as features ship.  
 > Last updated: 2026-03-17
@@ -23,7 +23,7 @@
 12. [Frontend Shell & UX](#12-frontend-shell--ux)
 13. [Testing](#13-testing)
 14. [DevOps & Production](#14-devops--production)
-15. [AI Assistant — PearlAI (Backlog)](#15-ai-assistant--peariai-backlog)
+15. [AI Assistant — DentAI (Backlog)](#15-ai-assistant--peariai-backlog)
 
 ---
 
@@ -381,14 +381,14 @@
 
 ---
 
-## 15. AI Assistant — PearlAI (Backlog)
+## 15. AI Assistant — DentAI (Backlog)
 
 > Planned feature F8 from `implementation-plan.md`. Not started. Revisit after Phase 5 is complete.
 
 ### Backend
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 15.1 | `PearlDesk.AI` module scaffold | 🔲 | New module alongside existing ones |
+| 15.1 | `DentFlow.AI` module scaffold | 🔲 | New module alongside existing ones |
 | 15.2 | Patient context builder service | 🔲 | Aggregates demographics, treatment plans, SOAP notes, appt history, allergies into system prompt |
 | 15.3 | `POST /ai/chat` FastEndpoints endpoint (SSE streaming) | 🔲 | Server-Sent Events for real-time response streaming |
 | 15.4 | AI provider abstraction (OpenAI / Azure OpenAI / Ollama) | 🔲 | Configurable per tenant |
@@ -404,4 +404,4 @@
 | 15.10 | Expandable AI chat side panel with message history | 🔲 | |
 | 15.11 | Streaming text rendering (SSE → real-time typing effect) | 🔲 | |
 | 15.12 | Quick-action prompt chips ("Summarise history", "Draft SOAP note", "Check contraindications") | 🔲 | |
-| 15.13 | PearlAI settings page — enable/disable, provider selection (admin only) | 🔲 | |
+| 15.13 | DentAI settings page — enable/disable, provider selection (admin only) | 🔲 | |

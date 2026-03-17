@@ -1,9 +1,9 @@
----
+﻿---
 mode: agent
-description: Add a new FastEndpoint to an existing PearlDesk module.
+description: Add a new FastEndpoint to an existing DentFlow module.
 ---
 
-Add a new FastEndpoint to the specified module. Follow all conventions in `.github/copilot-instructions.md` and `src/Modules/.instructions.md`. Use existing endpoints in `PearlDesk.Patients/Endpoints/` as the canonical reference.
+Add a new FastEndpoint to the specified module. Follow all conventions in `.github/copilot-instructions.md` and `src/Modules/.instructions.md`. Use existing endpoints in `DentFlow.Patients/Endpoints/` as the canonical reference.
 
 **Module**: ${input:moduleName:e.g. Patients}
 **Entity**: ${input:entityName:e.g. Patient}
@@ -62,7 +62,7 @@ public record ${input:action}${entityName}Request(
 
 **Rules enforced:**
 - Inject `ISender`, not `IMediator`.
-- `Roles(...)` must use constants from `PearlDesk.Domain.Identity.Roles`, never string literals.
+- `Roles(...)` must use constants from `DentFlow.Domain.Identity.Roles`, never string literals.
 - Map `req` → command manually. Never pass `req` directly to MediatR.
 - Always check `result.IsError` and call `SendErrorsAsync` before the happy path.
 - Use `Version(1)`.
@@ -75,7 +75,7 @@ If this is for a **new module**, remind me to register the endpoint assembly in 
 ```csharp
 o.Assemblies = [
     // existing...
-    typeof(PearlDesk.${moduleName}.Endpoints.${entityName}${input:action}Endpoint).Assembly,
+    typeof(DentFlow.${moduleName}.Endpoints.${entityName}${input:action}Endpoint).Assembly,
 ];
 ```
 

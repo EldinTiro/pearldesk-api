@@ -1,4 +1,4 @@
-# PearlDesk — Backend Architecture
+ï»¿# DentFlow ï¿½ Backend Architecture
 
 > Backend-specific technical reference for the `server` repository.  
 > Last updated: 2026-03-14
@@ -46,29 +46,29 @@
 ## Solution Structure
 
 ```
-pearldesk-api/
-+-- PearlDesk.sln
+DentFlow-api/
++-- DentFlow.sln
 +-- Dockerfile
 +-- documentation/               ? This folder (BE-specific docs)
 +-- src/
-¦   +-- PearlDesk.API/           ? FastEndpoints, middleware, DI wiring, Program.cs
-¦   +-- PearlDesk.Application/   ? MediatR handlers, pipeline behaviors, interfaces
-¦   +-- PearlDesk.Domain/        ? Entities, value objects, enums, typed errors
-¦   +-- PearlDesk.Infrastructure/? EF Core DbContext, repositories, external adapters
-¦   +-- Modules/
-¦       +-- PearlDesk.Tenants/
-¦       +-- PearlDesk.Identity/
-¦       +-- PearlDesk.Staff/
-¦       +-- PearlDesk.Patients/
-¦       +-- PearlDesk.Appointments/
-¦       +-- PearlDesk.Treatments/
-¦       +-- PearlDesk.Billing/
-¦       +-- PearlDesk.Notifications/
-¦       +-- PearlDesk.Documents/
-¦       +-- PearlDesk.Reporting/
+ï¿½   +-- DentFlow.API/           ? FastEndpoints, middleware, DI wiring, Program.cs
+ï¿½   +-- DentFlow.Application/   ? MediatR handlers, pipeline behaviors, interfaces
+ï¿½   +-- DentFlow.Domain/        ? Entities, value objects, enums, typed errors
+ï¿½   +-- DentFlow.Infrastructure/? EF Core DbContext, repositories, external adapters
+ï¿½   +-- Modules/
+ï¿½       +-- DentFlow.Tenants/
+ï¿½       +-- DentFlow.Identity/
+ï¿½       +-- DentFlow.Staff/
+ï¿½       +-- DentFlow.Patients/
+ï¿½       +-- DentFlow.Appointments/
+ï¿½       +-- DentFlow.Treatments/
+ï¿½       +-- DentFlow.Billing/
+ï¿½       +-- DentFlow.Notifications/
+ï¿½       +-- DentFlow.Documents/
+ï¿½       +-- DentFlow.Reporting/
 +-- tests/
-    +-- PearlDesk.Identity.Tests/
-    +-- PearlDesk.Tenants.Tests/
+    +-- DentFlow.Identity.Tests/
+    +-- DentFlow.Tenants.Tests/
     +-- http/                    ? .http test files per module
         +-- identity/
         +-- tenants/
@@ -89,35 +89,35 @@ Domain has **zero** dependencies on other layers. Infrastructure and Modules dep
 
 ## Architecture Principles
 
-- **Modular Monolith** — all modules in one deployable unit; can be extracted to microservices later
-- **Clean Architecture** — dependencies always point inward toward Domain
-- **CQRS** — commands mutate state, queries only read; never mixed
-- **No business logic in endpoints** — endpoints map HTTP ? MediatR only
-- **No cross-module DbContext access** — modules communicate via MediatR or service interfaces
+- **Modular Monolith** ï¿½ all modules in one deployable unit; can be extracted to microservices later
+- **Clean Architecture** ï¿½ dependencies always point inward toward Domain
+- **CQRS** ï¿½ commands mutate state, queries only read; never mixed
+- **No business logic in endpoints** ï¿½ endpoints map HTTP ? MediatR only
+- **No cross-module DbContext access** ï¿½ modules communicate via MediatR or service interfaces
 
 ---
 
 ## Module Structure
 
-Each module under `src/Modules/PearlDesk.{ModuleName}/` follows:
+Each module under `src/Modules/DentFlow.{ModuleName}/` follows:
 
 ```
-PearlDesk.{ModuleName}/
+DentFlow.{ModuleName}/
 +-- Domain/
-¦   +-- {Entity}.cs
-¦   +-- {Entity}Errors.cs
+ï¿½   +-- {Entity}.cs
+ï¿½   +-- {Entity}Errors.cs
 +-- Application/
-¦   +-- Commands/
-¦   ¦   +-- {Verb}{Entity}/
-¦   ¦       +-- {Verb}{Entity}Command.cs
-¦   ¦       +-- {Verb}{Entity}CommandHandler.cs
-¦   ¦       +-- {Verb}{Entity}CommandValidator.cs
-¦   +-- Queries/
-¦       +-- Get{Entity}ById/
-¦           +-- Get{Entity}ByIdQuery.cs
-¦           +-- Get{Entity}ByIdQueryHandler.cs
+ï¿½   +-- Commands/
+ï¿½   ï¿½   +-- {Verb}{Entity}/
+ï¿½   ï¿½       +-- {Verb}{Entity}Command.cs
+ï¿½   ï¿½       +-- {Verb}{Entity}CommandHandler.cs
+ï¿½   ï¿½       +-- {Verb}{Entity}CommandValidator.cs
+ï¿½   +-- Queries/
+ï¿½       +-- Get{Entity}ById/
+ï¿½           +-- Get{Entity}ByIdQuery.cs
+ï¿½           +-- Get{Entity}ByIdQueryHandler.cs
 +-- Infrastructure/
-¦   +-- {Entity}Repository.cs
+ï¿½   +-- {Entity}Repository.cs
 +-- Endpoints/
     +-- {Entity}CreateEndpoint.cs
     +-- {Entity}GetByIdEndpoint.cs
@@ -146,7 +146,7 @@ public abstract class TenantAuditableEntity : BaseEntity, ISoftDeletable
 }
 ```
 
-**Never** create an entity without this base class. **Never** hard-delete clinical or financial records — always call `SoftDelete()`.
+**Never** create an entity without this base class. **Never** hard-delete clinical or financial records ï¿½ always call `SoftDelete()`.
 
 ### Naming Conventions
 
@@ -175,7 +175,7 @@ public abstract class TenantAuditableEntity : BaseEntity, ISoftDeletable
 ### Refresh Tokens
 - Stored in **HttpOnly + Secure + SameSite=Strict** cookie
 - Hashed with SHA-256 before persisting to `refresh_tokens` table
-- Token family tracking — reuse of a revoked token revokes the entire family
+- Token family tracking ï¿½ reuse of a revoked token revokes the entire family
 - Configurable lifetime: `Jwt:RefreshTokenExpiryDays` (default: 7)
 
 ### Roles
@@ -189,17 +189,17 @@ Two-layer model: coarse Roles + fine-grained Permission overrides per user.
   - Configured via `oidc_provider_url`, `oidc_client_id`, `oidc_client_secret` on tenant settings
 
 ### MFA
-- TOTP via `OtpNet` — compatible with Google Authenticator / Authy
-- Per-tenant enforcement — `ClinicOwner` can mandate MFA for all staff
+- TOTP via `OtpNet` ï¿½ compatible with Google Authenticator / Authy
+- Per-tenant enforcement ï¿½ `ClinicOwner` can mandate MFA for all staff
 
 ---
 
 ## Multi-Tenancy
 
-- **Finbuckle.MultiTenant** v9 with subdomain resolution: `{slug}.pearldesk.com`
+- **Finbuckle.MultiTenant** v9 with subdomain resolution: `{slug}.DentFlow.com`
 - `TenantId` automatically applied to all `TenantAuditableEntity` rows on save
 - **Global Query Filters** in `ApplicationDbContext` automatically scope all queries to the current tenant
-- **Never** add `WHERE tenant_id = ...` manually — the filter handles it
+- **Never** add `WHERE tenant_id = ...` manually ï¿½ the filter handles it
 - `tenantId` in JWT is cross-validated against the resolved subdomain on every request
 
 ---
@@ -207,21 +207,21 @@ Two-layer model: coarse Roles + fine-grained Permission overrides per user.
 ## EF Core & Database
 
 - **PostgreSQL 17** via Npgsql
-- All timestamps: `TIMESTAMPTZ` (UTC only — never local time)
-- All PKs: `UUID` / `Guid` — never `int` identity
-- Money: `NUMERIC(10,2)` — never `float` or `double`
-- Soft delete: `is_deleted` + `deleted_at` columns — managed by `TenantAuditableEntity`
-- Migrations live in `PearlDesk.Infrastructure`
+- All timestamps: `TIMESTAMPTZ` (UTC only ï¿½ never local time)
+- All PKs: `UUID` / `Guid` ï¿½ never `int` identity
+- Money: `NUMERIC(10,2)` ï¿½ never `float` or `double`
+- Soft delete: `is_deleted` + `deleted_at` columns ï¿½ managed by `TenantAuditableEntity`
+- Migrations live in `DentFlow.Infrastructure`
 
 ### Running Migrations
 ```powershell
 dotnet ef migrations add {MigrationName} `
-    --project pearldesk-api/src/PearlDesk.Infrastructure `
-    --startup-project pearldesk-api/src/PearlDesk.API
+    --project DentFlow-api/src/DentFlow.Infrastructure `
+    --startup-project DentFlow-api/src/DentFlow.API
 
 dotnet ef database update `
-    --project pearldesk-api/src/PearlDesk.Infrastructure `
-    --startup-project pearldesk-api/src/PearlDesk.API
+    --project DentFlow-api/src/DentFlow.Infrastructure `
+    --startup-project DentFlow-api/src/DentFlow.API
 ```
 
 ---
@@ -265,7 +265,7 @@ public class CreatePatientCommandHandler(IPatientRepository repo)
 
 ## Error Handling
 
-- All handlers return `ErrorOr<T>` — **never throw** for business logic
+- All handlers return `ErrorOr<T>` ï¿½ **never throw** for business logic
 - Typed errors defined in `Domain/` per aggregate:
   ```csharp
   public static class PatientErrors
@@ -299,9 +299,9 @@ public class CreatePatientCommandHandler(IPatientRepository repo)
 | MediatR handlers | Success + all error branches | xUnit + NSubstitute + FluentAssertions |
 | Domain entities | Business rules, state transitions | xUnit + FluentAssertions |
 | Validators | Valid and invalid input cases | xUnit + FluentValidation.TestHelper |
-| Endpoints | **Not tested directly** — covered by `.http` files | — |
+| Endpoints | **Not tested directly** ï¿½ covered by `.http` files | ï¿½ |
 
-One test project per module: `tests/PearlDesk.{ModuleName}.Tests/`
+One test project per module: `tests/DentFlow.{ModuleName}.Tests/`
 
 ```csharp
 // Example handler test pattern
@@ -338,7 +338,7 @@ Starts PostgreSQL 17 (port 5432) and Redis 7 (port 6379).
 
 ### Run API
 ```powershell
-dotnet run --project pearldesk-api/src/PearlDesk.API
+dotnet run --project DentFlow-api/src/DentFlow.API
 ```
 API available at `http://localhost:5000`  
 Swagger at `http://localhost:5000/swagger`  
@@ -346,8 +346,8 @@ Health check at `http://localhost:5000/health`
 
 ### Environment
 Copy `appsettings.Development.json` and set:
-- `Jwt:PrivateKey` — RSA private key (PEM format)
-- `Jwt:PublicKey` — RSA public key (PEM format)
+- `Jwt:PrivateKey` ï¿½ RSA private key (PEM format)
+- `Jwt:PublicKey` ï¿½ RSA public key (PEM format)
 
 ---
 
@@ -367,7 +367,7 @@ The `dev-workflow.ps1` script at the **monorepo root** runs the full CI loop loc
 |---|---|
 | 1 | `docker compose up -d` + health check |
 | 2 | EF Core migration (if `-Migration` supplied) |
-| 3 | `dotnet build` — must pass with 0 errors |
+| 3 | `dotnet build` ï¿½ must pass with 0 errors |
 | 4 | `dotnet test` for the module |
 | 5 | API start + `/health` check |
 | 6 | `.http` file execution for the module |

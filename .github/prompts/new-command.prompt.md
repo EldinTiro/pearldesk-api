@@ -1,9 +1,9 @@
----
+﻿---
 mode: agent
-description: Add a new command (and optionally query) to an existing PearlDesk module.
+description: Add a new command (and optionally query) to an existing DentFlow module.
 ---
 
-Add the files listed below to the specified module. Follow all conventions in `.github/copilot-instructions.md` and `src/Modules/.instructions.md`. Use `PearlDesk.Patients` as the canonical reference.
+Add the files listed below to the specified module. Follow all conventions in `.github/copilot-instructions.md` and `src/Modules/.instructions.md`. Use `DentFlow.Patients` as the canonical reference.
 
 **Module**: ${input:moduleName:e.g. Patients}
 **Entity**: ${input:entityName:e.g. Patient}
@@ -74,7 +74,7 @@ public static readonly Error Invalid${commandVerb} = Error.Validation(
     "Cannot perform this action in the current state.");
 ```
 
-### 6. Unit test (`tests/PearlDesk.${moduleName}.Tests/Commands/${commandVerb}${entityName}CommandHandlerTests.cs`)
+### 6. Unit test (`tests/DentFlow.${moduleName}.Tests/Commands/${commandVerb}${entityName}CommandHandlerTests.cs`)
 
 Write tests for:
 - Happy path — command succeeds, correct response returned

@@ -1,4 +1,4 @@
-# PearlDesk — Implementation Plan
+﻿# DentFlow — Implementation Plan
 
 > Multi-tenant dental practice management SaaS  
 > Last updated: 2026-03-17
@@ -25,7 +25,7 @@
 
 ## Overview
 
-PearlDesk is a multi-tenant, cloud-hosted dental practice management application. Each dental clinic is a tenant that gets its own subdomain (e.g. `clinicname.pearldesk.com`). All tenants share a single PostgreSQL database, isolated at the row level via `tenant_id` on every table.
+DentFlow is a multi-tenant, cloud-hosted dental practice management application. Each dental clinic is a tenant that gets its own subdomain (e.g. `clinicname.DentFlow.com`). All tenants share a single PostgreSQL database, isolated at the row level via `tenant_id` on every table.
 
 **Core characteristics:**
 - Multi-tenant SaaS (row-level isolation, subdomain-based resolution)
@@ -121,32 +121,32 @@ Deployment uses Docker containers, keeping the application cloud-portable.
 ## Solution Structure
 
 ```
-PearlDesk/
-├── pearldesk-api/
+DentFlow/
+├── DentFlow-api/
 │   ├── src/
-│   │   ├── PearlDesk.API/                  # Entry point: FastEndpoints, middleware, DI wiring
-│   │   ├── PearlDesk.Application/          # CQRS handlers, interfaces, pipeline behaviors
-│   │   ├── PearlDesk.Domain/               # Entities, value objects, enums, typed errors
-│   │   ├── PearlDesk.Infrastructure/       # EF Core, repositories, external service adapters
+│   │   ├── DentFlow.API/                  # Entry point: FastEndpoints, middleware, DI wiring
+│   │   ├── DentFlow.Application/          # CQRS handlers, interfaces, pipeline behaviors
+│   │   ├── DentFlow.Domain/               # Entities, value objects, enums, typed errors
+│   │   ├── DentFlow.Infrastructure/       # EF Core, repositories, external service adapters
 │   │   │
 │   │   └── Modules/
-│   │       ├── PearlDesk.Tenants/
-│   │       ├── PearlDesk.Identity/
-│   │       ├── PearlDesk.Staff/
-│   │       ├── PearlDesk.Patients/
-│   │       ├── PearlDesk.Appointments/
-│   │       ├── PearlDesk.Treatments/
-│   │       ├── PearlDesk.Billing/
-│   │       ├── PearlDesk.Notifications/
-│   │       ├── PearlDesk.Documents/
-│   │       └── PearlDesk.Reporting/
+│   │       ├── DentFlow.Tenants/
+│   │       ├── DentFlow.Identity/
+│   │       ├── DentFlow.Staff/
+│   │       ├── DentFlow.Patients/
+│   │       ├── DentFlow.Appointments/
+│   │       ├── DentFlow.Treatments/
+│   │       ├── DentFlow.Billing/
+│   │       ├── DentFlow.Notifications/
+│   │       ├── DentFlow.Documents/
+│   │       └── DentFlow.Reporting/
 │   │
 │   └── tests/
-│       ├── PearlDesk.Patients.Tests/
-│       ├── PearlDesk.Appointments.Tests/
+│       ├── DentFlow.Patients.Tests/
+│       ├── DentFlow.Appointments.Tests/
 │       └── ... (one test project per module)
 │
-├── pearldesk-web/                               # React application
+├── DentFlow-web/                               # React application
 │   └── src/
 │       ├── features/                       # Feature-sliced: patients/, appointments/, etc.
 │       ├── components/                     # Shared UI components
@@ -175,7 +175,7 @@ PearlDesk/
 4. **Soft deletes** — All tenant-scoped entities implement a `ISoftDeletable` interface (`IsDeleted`, `DeletedAt`). The Global Query Filter also appends `WHERE is_deleted = false`, ensuring soft-deleted records are invisible to all queries by default. Hard deletes are never performed on clinical or financial data.
 5. Tenant creation triggers a Hangfire seeding job (default roles, settings, admin user).
 
-**Subdomain pattern:** `{clinic-slug}.pearldesk.com`
+**Subdomain pattern:** `{clinic-slug}.DentFlow.com`
 
 ### Soft Delete Interface
 
@@ -204,14 +204,14 @@ A `SoftDeleteRepository` base class exposes a `SoftDeleteAsync` method instead o
 ### Clean Architecture Layers
 
 ```
-PearlDesk.Domain/
+DentFlow.Domain/
 │   Entities/            ← Pure domain objects (no EF, no MediatR)
 │   ValueObjects/        ← e.g. ToothNumber, Money, PhoneNumber
 │   Enums/
 │   Errors/              ← Typed error definitions per aggregate
 │                          e.g. PatientErrors.NotFound, AppointmentErrors.Conflict
 
-PearlDesk.Application/
+DentFlow.Application/
 │   Common/
 │     Behaviors/         ← MediatR pipeline: ValidationBehavior, LoggingBehavior, PerformanceBehavior
 │     Interfaces/        ← IPatientRepository, IEmailSender, IFileStorage, etc.
@@ -224,7 +224,7 @@ PearlDesk.Application/
 │       Queries/
 │     ... (one folder per feature/module)
 
-PearlDesk.Infrastructure/
+DentFlow.Infrastructure/
 │   Persistence/
 │     DbContext/         ← TenantDbContext (EF Core + Finbuckle integration)
 │     Repositories/      ← EF Core implementations of application interfaces
@@ -236,7 +236,7 @@ PearlDesk.Infrastructure/
 │     Storage/           ← S3 adapter
 │   BackgroundJobs/      ← Hangfire job definitions
 
-PearlDesk.API/
+DentFlow.API/
 │   Endpoints/           ← FastEndpoints endpoint classes (one class per operation)
 │   Middleware/          ← Tenant resolution, auth, exception fallback
 │   Mapping/             ← Request → Command/Query mappers
@@ -417,7 +417,7 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=pearldesk;Username=pearldesk;Password=pearldesk
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=DentFlow;Username=DentFlow;Password=DentFlow
       - Redis__ConnectionString=redis:6379
     depends_on:
       postgres:
@@ -427,7 +427,7 @@ services:
 
   frontend:
     build:
-      context: ./pearldesk-web
+      context: ./DentFlow-web
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
@@ -439,13 +439,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: pearldesk
-      POSTGRES_USER: pearldesk
-      POSTGRES_PASSWORD: pearldesk
+      POSTGRES_DB: DentFlow
+      POSTGRES_USER: DentFlow
+      POSTGRES_PASSWORD: DentFlow
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pearldesk"]
+      test: ["CMD-SHELL", "pg_isready -U DentFlow"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -559,7 +559,7 @@ Structured clinical note-taking linked to appointments and treatment items.
 
 ### F4 — Online Booking Portal
 A public-facing booking page allowing patients to self-schedule appointments.
-- Accessible via `{clinic-slug}.pearldesk.com/book` — no login required to browse availability
+- Accessible via `{clinic-slug}.DentFlow.com/book` — no login required to browse availability
 - Patients select service type, preferred dentist, and available time slot
 - Booking confirmation sent via email and SMS
 - Configurable booking rules per tenant (lead time, cancellation window, max future bookings)
@@ -585,14 +585,14 @@ Allows dentists to export a treatment plan as a branded PDF for the patient to r
 
 ### F7 — Patient Portal
 A read-only self-service portal for patients to view their own records.
-- Accessible at `{clinic-slug}.pearldesk.com/portal` — separate login with `Patient` role
+- Accessible at `{clinic-slug}.DentFlow.com/portal` — separate login with `Patient` role
 - View upcoming and past appointments
 - Download invoices and receipts
 - View and sign treatment plans (integrates with F6)
 - Messaging thread with the clinic (not real-time)
 - Pre-appointment medical history update form
 
-### F8 — AI Clinical Assistant (PearlAI)
+### F8 — AI Clinical Assistant (DentAI)
 An AI-powered chat assistant embedded in the clinician's workflow, with full context of the current patient.
 - **Entry point**: a chat panel available on any patient detail page and appointment view
 - **Context window**: at query time the assistant receives the patient's full profile — demographics, current treatment plans, SOAP notes, appointment history, allergies, medical alerts, and active billing items — all scoped to the current tenant
@@ -603,11 +603,11 @@ An AI-powered chat assistant embedded in the clinician's workflow, with full con
   - *"What CDT codes should I use for a full-mouth debridement?"*
   - *"Suggest a reasonable timeline for this patient's three-item treatment plan."*
 - **Architecture**:
-  - Backend: `PearlDesk.AI` module — new FastEndpoints `POST /ai/chat` endpoint
+  - Backend: `DentFlow.AI` module — new FastEndpoints `POST /ai/chat` endpoint
   - Context builder service collects patient data and formats a system prompt
   - Streams response via Server-Sent Events (SSE) for a real-time typing effect in the UI
   - Provider-agnostic: configurable per tenant — OpenAI GPT-4o (default), Azure OpenAI, or local Ollama
-  - **No patient data is sent to third-party providers without explicit tenant opt-in** — compliance gate on the `PearlAI` settings page
+  - **No patient data is sent to third-party providers without explicit tenant opt-in** — compliance gate on the `DentAI` settings page
   - Conversation history stored in Redis (TTL: session only) — never persisted to the database
   - Rate-limited per tenant and per user to control token costs
 - **Frontend**: floating chat button on patient detail; expandable side panel with message history, streaming text, and quick-action prompt chips

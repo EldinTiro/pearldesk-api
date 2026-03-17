@@ -1,9 +1,9 @@
----
+﻿---
 mode: agent
-description: Scaffold a complete new PearlDesk module following the established patterns.
+description: Scaffold a complete new DentFlow module following the established patterns.
 ---
 
-Scaffold a complete new PearlDesk module for the entity described below. Follow the architecture and conventions in `.github/copilot-instructions.md` and `src/Modules/.instructions.md` exactly.
+Scaffold a complete new DentFlow module for the entity described below. Follow the architecture and conventions in `.github/copilot-instructions.md` and `src/Modules/.instructions.md` exactly.
 
 **Module name**: ${input:moduleName:e.g. Treatments}
 **Entity name**: ${input:entityName:e.g. Treatment}
@@ -13,9 +13,9 @@ Scaffold a complete new PearlDesk module for the entity described below. Follow 
 
 ## Files to create
 
-Generate all files listed below. Use the existing `PearlDesk.Patients` module as the canonical reference — match naming, namespaces, access modifiers, and patterns exactly.
+Generate all files listed below. Use the existing `DentFlow.Patients` module as the canonical reference — match naming, namespaces, access modifiers, and patterns exactly.
 
-### Domain layer (`src/Modules/PearlDesk.${moduleName}/Domain/`)
+### Domain layer (`src/Modules/DentFlow.${moduleName}/Domain/`)
 
 1. **`${entityName}.cs`** — Domain entity
    - Inherits `TenantAuditableEntity`
@@ -30,7 +30,7 @@ Generate all files listed below. Use the existing `PearlDesk.Patients` module as
 
 3. **`${entityName}Enums.cs`** — Any enums the entity uses (if needed)
 
-### Application layer (`src/Modules/PearlDesk.${moduleName}/Application/`)
+### Application layer (`src/Modules/DentFlow.${moduleName}/Application/`)
 
 4. **`Commands/Create${entityName}Command.cs`** — `record` implementing `IRequest<ErrorOr<${entityName}Response>>`
 5. **`Commands/Create${entityName}CommandHandler.cs`** — Handler with primary constructor injection
@@ -46,9 +46,9 @@ Generate all files listed below. Use the existing `PearlDesk.Patients` module as
 15. **`Queries/List${entityName}sQueryHandler.cs`**
 16. **`Interfaces/I${entityName}Repository.cs`** — Repository interface with `GetByIdAsync`, `ListAsync`, `AddAsync`, `UpdateAsync`, `SoftDeleteAsync`
 17. **`${entityName}Response.cs`** — `record` with `static FromEntity(${entityName} e)` factory
-18. **`PagedResult.cs`** — Copy from `PearlDesk.Patients.Application` if not already present
+18. **`PagedResult.cs`** — Copy from `DentFlow.Patients.Application` if not already present
 
-### Endpoints (`src/Modules/PearlDesk.${moduleName}/Endpoints/`)
+### Endpoints (`src/Modules/DentFlow.${moduleName}/Endpoints/`)
 
 19. **`${entityName}CreateEndpoint.cs`** — POST `/${moduleName:lower}`, `SendCreatedAtAsync`
 20. **`${entityName}GetByIdEndpoint.cs`** — GET `/${moduleName:lower}/{id}`, `SendOkAsync`
@@ -58,16 +58,16 @@ Generate all files listed below. Use the existing `PearlDesk.Patients` module as
 
 All endpoints:
 - Inject `ISender`
-- Call `Roles(...)` with constants from `PearlDesk.Domain.Identity.Roles`
+- Call `Roles(...)` with constants from `DentFlow.Domain.Identity.Roles`
 - Call `Version(1)`
 - Use `SendErrorsAsync` on `result.IsError`
 
 ### Module wiring
 
 24. **`DependencyInjection.cs`** — Module DI (typically empty — infra wires repos)
-25. **`PearlDesk.${moduleName}.csproj`** — References `PearlDesk.Domain` and `PearlDesk.Application`
+25. **`DentFlow.${moduleName}.csproj`** — References `DentFlow.Domain` and `DentFlow.Application`
 
-### Infrastructure (in `src/PearlDesk.Infrastructure/`)
+### Infrastructure (in `src/DentFlow.Infrastructure/`)
 
 26. **`Persistence/Configurations/${entityName}Configuration.cs`** — `IEntityTypeConfiguration<${entityName}>`
     - `ToTable("${entityName:snake_case}s")`
@@ -81,5 +81,5 @@ After generating all files, remind me to:
 - Register `I${entityName}Repository` → `${entityName}Repository` in `Infrastructure/DependencyInjection.cs`
 - Add module assembly to `AddApplication(...)` in `Program.cs`
 - Add endpoint assembly to `o.Assemblies` in `AddFastEndpoints(...)` in `Program.cs`
-- Add a test project `tests/PearlDesk.${moduleName}.Tests/`
-- Run `dotnet ef migrations add Add${entityName} --project src/PearlDesk.Infrastructure`
+- Add a test project `tests/DentFlow.${moduleName}.Tests/`
+- Run `dotnet ef migrations add Add${entityName} --project src/DentFlow.Infrastructure`
