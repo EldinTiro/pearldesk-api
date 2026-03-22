@@ -1,0 +1,273 @@
+using ErrorOr;
+using FluentValidation;
+using MediatR;
+using DentFlow.Billing.Application.Interfaces;
+using DentFlow.Billing.Domain;
+
+namespace DentFlow.Billing.Application.Commands;
+
+// ── Create Invoice ──────────────────────────────────────────────────────────
+
+public record CreateInvoiceLineItemRequest(
+    string Description,
+    string? CdtCode,
+    int? ToothNumber,
+    int Quantity,
+    decimal UnitFee,
+    Guid? TreatmentPlanItemId);
+
+public record CreateInvoiceCommand(
+    Guid PatientId,
+    DateTime? DueDate,
+    string? Notes,
+    IReadOnlyList<CreateInvoiceLineItemRequest> LineItems)
+    : IRequest<ErrorOr<InvoiceResponse>>;
+
+public class CreateInvoiceCommandHandler(IInvoiceRepository repo)
+    : IRequestHandler<CreateInvoiceCommand, ErrorOr<InvoiceResponse>>
+{
+    public async Task<ErrorOr<InvoiceResponse>> Handle(CreateInvoiceCommand cmd, CancellationToken ct)
+    {
+        var count = await repo.CountByTenantAsync(ct);
+        var invoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{(count + 1):D4}";
+
+        var invoice = Invoice.Create(cmd.PatientId, invoiceNumber, cmd.DueDate, cmd.Notes);
+        await repo.AddAsync(invoice, ct);
+
+        foreach (var li in cmd.LineItems)
+        {
+            var lineItem = InvoiceLineItem.Create(
+                invoice.Id, li.Description, li.CdtCode,
+                li.ToothNumber, li.Quantity, li.UnitFee, li.TreatmentPlanItemId);
+            await repo.AddLineItemAsync(lineItem, ct);
+        }
+
+        var created = await repo.GetByIdWithDetailsAsync(invoice.Id, ct);
+        return InvoiceResponse.FromEntity(created!);
+    }
+}
+
+public class CreateInvoiceCommandValidator : AbstractValidator<CreateInvoiceCommand>
+{
+    public CreateInvoiceCommandValidator()
+    {
+        RuleFor(x => x.PatientId).NotEmpty();
+        RuleFor(x => x.DueDate)
+            .GreaterThanOrEqualTo(DateTime.UtcNow.Date)
+            .When(x => x.DueDate.HasValue)
+            .WithMessage("Due date must be today or in the future.");
+        RuleForEach(x => x.LineItems).ChildRules(item =>
+        {
+            item.RuleFor(i => i.Description).NotEmpty().MaximumLength(500);
+            item.RuleFor(i => i.Quantity).GreaterThan(0);
+            item.RuleFor(i => i.UnitFee).GreaterThanOrEqualTo(0);
+        });
+    }
+}
+
+// ── Update Invoice ──────────────────────────────────────────────────────────
+
+public record UpdateInvoiceCommand(
+    Guid InvoiceId,
+    DateTime? DueDate,
+    string? Notes)
+    : IRequest<ErrorOr<InvoiceResponse>>;
+
+public class UpdateInvoiceCommandHandler(IInvoiceRepository repo)
+    : IRequestHandler<UpdateInvoiceCommand, ErrorOr<InvoiceResponse>>
+{
+    public async Task<ErrorOr<InvoiceResponse>> Handle(UpdateInvoiceCommand cmd, CancellationToken ct)
+    {
+        var invoice = await repo.GetByIdWithDetailsAsync(cmd.InvoiceId, ct);
+        if (invoice is null) return BillingErrors.InvoiceNotFound;
+        if (invoice.Status == InvoiceStatus.Void) return BillingErrors.CannotModifyVoidedInvoice;
+
+        invoice.Update(cmd.DueDate, cmd.Notes);
+        await repo.UpdateAsync(invoice, ct);
+        return InvoiceResponse.FromEntity(invoice);
+    }
+}
+
+public class UpdateInvoiceCommandValidator : AbstractValidator<UpdateInvoiceCommand>
+{
+    public UpdateInvoiceCommandValidator()
+    {
+        RuleFor(x => x.InvoiceId).NotEmpty();
+    }
+}
+
+// ── Add Line Item ───────────────────────────────────────────────────────────
+
+public record AddLineItemCommand(
+    Guid InvoiceId,
+    string Description,
+    string? CdtCode,
+    int? ToothNumber,
+    int Quantity,
+    decimal UnitFee,
+    Guid? TreatmentPlanItemId)
+    : IRequest<ErrorOr<InvoiceResponse>>;
+
+public class AddLineItemCommandHandler(IInvoiceRepository repo)
+    : IRequestHandler<AddLineItemCommand, ErrorOr<InvoiceResponse>>
+{
+    public async Task<ErrorOr<InvoiceResponse>> Handle(AddLineItemCommand cmd, CancellationToken ct)
+    {
+        var invoice = await repo.GetByIdWithDetailsAsync(cmd.InvoiceId, ct);
+        if (invoice is null) return BillingErrors.InvoiceNotFound;
+        if (invoice.Status == InvoiceStatus.Void) return BillingErrors.CannotModifyVoidedInvoice;
+
+        var item = InvoiceLineItem.Create(
+            invoice.Id, cmd.Description, cmd.CdtCode,
+            cmd.ToothNumber, cmd.Quantity, cmd.UnitFee, cmd.TreatmentPlanItemId);
+        await repo.AddLineItemAsync(item, ct);
+
+        var updated = await repo.GetByIdWithDetailsAsync(invoice.Id, ct);
+        return InvoiceResponse.FromEntity(updated!);
+    }
+}
+
+public class AddLineItemCommandValidator : AbstractValidator<AddLineItemCommand>
+{
+    public AddLineItemCommandValidator()
+    {
+        RuleFor(x => x.InvoiceId).NotEmpty();
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(500);
+        RuleFor(x => x.Quantity).GreaterThan(0);
+        RuleFor(x => x.UnitFee).GreaterThanOrEqualTo(0);
+    }
+}
+
+// ── Update Line Item ────────────────────────────────────────────────────────
+
+public record UpdateLineItemCommand(
+    Guid InvoiceId,
+    Guid LineItemId,
+    string Description,
+    string? CdtCode,
+    int? ToothNumber,
+    int Quantity,
+    decimal UnitFee)
+    : IRequest<ErrorOr<InvoiceResponse>>;
+
+public class UpdateLineItemCommandHandler(IInvoiceRepository repo)
+    : IRequestHandler<UpdateLineItemCommand, ErrorOr<InvoiceResponse>>
+{
+    public async Task<ErrorOr<InvoiceResponse>> Handle(UpdateLineItemCommand cmd, CancellationToken ct)
+    {
+        var invoice = await repo.GetByIdWithDetailsAsync(cmd.InvoiceId, ct);
+        if (invoice is null) return BillingErrors.InvoiceNotFound;
+        if (invoice.Status == InvoiceStatus.Void) return BillingErrors.CannotModifyVoidedInvoice;
+
+        var item = await repo.GetLineItemByIdAsync(cmd.LineItemId, ct);
+        if (item is null) return BillingErrors.LineItemNotFound;
+
+        item.Update(cmd.Description, cmd.CdtCode, cmd.ToothNumber, cmd.Quantity, cmd.UnitFee);
+        var updated = await repo.GetByIdWithDetailsAsync(invoice.Id, ct);
+        return InvoiceResponse.FromEntity(updated!);
+    }
+}
+
+public class UpdateLineItemCommandValidator : AbstractValidator<UpdateLineItemCommand>
+{
+    public UpdateLineItemCommandValidator()
+    {
+        RuleFor(x => x.InvoiceId).NotEmpty();
+        RuleFor(x => x.LineItemId).NotEmpty();
+        RuleFor(x => x.Description).NotEmpty().MaximumLength(500);
+        RuleFor(x => x.Quantity).GreaterThan(0);
+        RuleFor(x => x.UnitFee).GreaterThanOrEqualTo(0);
+    }
+}
+
+// ── Delete Line Item ────────────────────────────────────────────────────────
+
+public record DeleteLineItemCommand(Guid InvoiceId, Guid LineItemId) : IRequest<ErrorOr<Success>>;
+
+public class DeleteLineItemCommandHandler(IInvoiceRepository repo)
+    : IRequestHandler<DeleteLineItemCommand, ErrorOr<Success>>
+{
+    public async Task<ErrorOr<Success>> Handle(DeleteLineItemCommand cmd, CancellationToken ct)
+    {
+        var invoice = await repo.GetByIdWithDetailsAsync(cmd.InvoiceId, ct);
+        if (invoice is null) return BillingErrors.InvoiceNotFound;
+        if (invoice.Status == InvoiceStatus.Void) return BillingErrors.CannotModifyVoidedInvoice;
+
+        var item = await repo.GetLineItemByIdAsync(cmd.LineItemId, ct);
+        if (item is null) return BillingErrors.LineItemNotFound;
+
+        await repo.RemoveLineItemAsync(item, ct);
+        return Result.Success;
+    }
+}
+
+// ── Void Invoice ────────────────────────────────────────────────────────────
+
+public record VoidInvoiceCommand(Guid InvoiceId) : IRequest<ErrorOr<InvoiceResponse>>;
+
+public class VoidInvoiceCommandHandler(IInvoiceRepository repo)
+    : IRequestHandler<VoidInvoiceCommand, ErrorOr<InvoiceResponse>>
+{
+    public async Task<ErrorOr<InvoiceResponse>> Handle(VoidInvoiceCommand cmd, CancellationToken ct)
+    {
+        var invoice = await repo.GetByIdWithDetailsAsync(cmd.InvoiceId, ct);
+        if (invoice is null) return BillingErrors.InvoiceNotFound;
+        if (invoice.Status == InvoiceStatus.Paid) return BillingErrors.CannotVoidPaidInvoice;
+
+        invoice.Void();
+        await repo.UpdateAsync(invoice, ct);
+        return InvoiceResponse.FromEntity(invoice);
+    }
+}
+
+// ── Record Payment ──────────────────────────────────────────────────────────
+
+public record RecordPaymentCommand(
+    Guid InvoiceId,
+    decimal Amount,
+    string Method,
+    DateTime PaidAt,
+    string? Reference,
+    string? Notes)
+    : IRequest<ErrorOr<InvoiceResponse>>;
+
+public class RecordPaymentCommandHandler(IInvoiceRepository repo)
+    : IRequestHandler<RecordPaymentCommand, ErrorOr<InvoiceResponse>>
+{
+    private static readonly string[] AllowedMethods =
+        Enum.GetNames<PaymentMethod>();
+
+    public async Task<ErrorOr<InvoiceResponse>> Handle(RecordPaymentCommand cmd, CancellationToken ct)
+    {
+        var invoice = await repo.GetByIdWithDetailsAsync(cmd.InvoiceId, ct);
+        if (invoice is null) return BillingErrors.InvoiceNotFound;
+        if (invoice.Status == InvoiceStatus.Void) return BillingErrors.CannotModifyVoidedInvoice;
+        if (cmd.Amount > invoice.BalanceDue) return BillingErrors.PaymentExceedsBalance;
+
+        var method = Enum.Parse<PaymentMethod>(cmd.Method, ignoreCase: true);
+        var payment = InvoicePayment.Create(invoice.Id, cmd.Amount, method, cmd.PaidAt, cmd.Reference, cmd.Notes);
+
+        await repo.AddPaymentAsync(payment, ct);
+        invoice.AddPayment(payment);
+        await repo.UpdateAsync(invoice, ct);
+
+        var updated = await repo.GetByIdWithDetailsAsync(invoice.Id, ct);
+        return InvoiceResponse.FromEntity(updated!);
+    }
+}
+
+public class RecordPaymentCommandValidator : AbstractValidator<RecordPaymentCommand>
+{
+    private static readonly string[] AllowedMethods = Enum.GetNames<PaymentMethod>();
+
+    public RecordPaymentCommandValidator()
+    {
+        RuleFor(x => x.InvoiceId).NotEmpty();
+        RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.Method)
+            .NotEmpty()
+            .Must(v => AllowedMethods.Contains(v, StringComparer.OrdinalIgnoreCase))
+            .WithMessage($"Method must be one of: {string.Join(", ", AllowedMethods)}.");
+        RuleFor(x => x.PaidAt).LessThanOrEqualTo(DateTime.UtcNow.AddMinutes(5));
+    }
+}

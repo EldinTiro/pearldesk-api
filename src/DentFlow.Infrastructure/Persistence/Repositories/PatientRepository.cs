@@ -16,6 +16,10 @@ public class PatientRepository(ApplicationDbContext dbContext) : IPatientReposit
         return await dbContext.Set<Patient>().FirstOrDefaultAsync(p => p.Email == email, cancellationToken);
     }
 
+    public async Task<Patient?> GetByPatientNumberAsync(string patientNumber, CancellationToken cancellationToken = default) =>
+        await dbContext.Set<Patient>().IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.PatientNumber == patientNumber, cancellationToken);
+
     public async Task<(IReadOnlyList<Patient> Items, int Total)> ListAsync(
         string? searchTerm, PatientStatus? status, int page, int pageSize, CancellationToken cancellationToken = default)
     {

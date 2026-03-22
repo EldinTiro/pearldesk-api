@@ -19,6 +19,7 @@ public record AppointmentResponse(
     DateTime? CancelledAt,
     DateTime? ConfirmedAt,
     DateTime? CheckedInAt,
+    DateTime? StartedAt,
     DateTime? CompletedAt,
     string Source,
     string? ColorHex,
@@ -29,8 +30,23 @@ public record AppointmentResponse(
         a.Id, a.PatientId, a.ProviderId, a.OperatoryId, a.AppointmentTypeId,
         a.Status, a.StartAt, a.EndAt, a.DurationMinutes, a.IsNewPatient,
         a.ChiefComplaint, a.Notes, a.CancellationReason, a.CancelledAt,
-        a.ConfirmedAt, a.CheckedInAt, a.CompletedAt, a.Source, a.ColorHex,
-        a.CreatedAt, a.UpdatedAt);
+        a.ConfirmedAt, a.CheckedInAt, a.StartedAt, a.CompletedAt,
+        a.Source, a.ColorHex, a.CreatedAt, a.UpdatedAt);
+}
+
+public record AppointmentStatusHistoryResponse(
+    Guid Id,
+    Guid AppointmentId,
+    string? FromStatus,
+    string ToStatus,
+    Guid? ChangedByUserId,
+    string? Reason,
+    bool IsOverride,
+    DateTime ChangedAt)
+{
+    public static AppointmentStatusHistoryResponse FromEntity(AppointmentStatusHistory h) => new(
+        h.Id, h.AppointmentId, h.FromStatus, h.ToStatus,
+        h.ChangedByUserId, h.Reason, h.IsOverride, h.ChangedAt);
 }
 
 public record AppointmentTypeResponse(
@@ -41,11 +57,12 @@ public record AppointmentTypeResponse(
     string? ColorHex,
     bool IsBookableOnline,
     bool RequiresNewPatientForm,
-    int SortOrder)
+    int SortOrder,
+    decimal? DefaultFee)
 {
     public static AppointmentTypeResponse FromEntity(AppointmentType at) => new(
         at.Id, at.Name, at.Description, at.DefaultDurationMinutes,
-        at.ColorHex, at.IsBookableOnline, at.RequiresNewPatientForm, at.SortOrder);
+        at.ColorHex, at.IsBookableOnline, at.RequiresNewPatientForm, at.SortOrder, at.DefaultFee);
 }
 
 public record PagedResult<T>(

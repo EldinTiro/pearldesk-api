@@ -14,5 +14,8 @@ public record UpdateStaffMemberCommand(
     string? Biography,
     string? LicenseNumber,
     DateOnly? LicenseExpiry,
-    string? NpiNumber) : IRequest<ErrorOr<StaffMemberResponse>>;
+    string? NpiNumber,
+    string? Address,
+    string? City,
+    string? PostalCode) : IRequest<ErrorOr<StaffMemberResponse>>;
 

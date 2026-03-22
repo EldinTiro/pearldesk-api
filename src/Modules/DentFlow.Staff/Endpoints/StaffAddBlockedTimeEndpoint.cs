@@ -27,7 +27,7 @@ public class StaffAddBlockedTimeEndpoint(ISender sender) : Endpoint<AddBlockedTi
             staffMemberId,
             req.StartAt,
             req.EndAt,
-            req.Reason,
+            req.AbsenceType,
             req.Notes);
 
         var result = await sender.Send(command, ct);
@@ -40,5 +40,5 @@ public class StaffAddBlockedTimeEndpoint(ISender sender) : Endpoint<AddBlockedTi
 public record AddBlockedTimeRequest(
     DateTime StartAt,
     DateTime EndAt,
-    string? Reason,
+    string AbsenceType,
     string? Notes);

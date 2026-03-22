@@ -20,6 +20,7 @@ public class Appointment : TenantAuditableEntity
     public Guid? CancelledByUserId { get; private set; }
     public DateTime? ConfirmedAt { get; private set; }
     public DateTime? CheckedInAt { get; private set; }
+    public DateTime? StartedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
     public DateTime? NoShowAt { get; private set; }
     public DateTime? ReminderSentAt { get; private set; }
@@ -59,17 +60,17 @@ public class Appointment : TenantAuditableEntity
         };
     }
 
-    public void Confirm()
-    {
-        Status = AppointmentStatus.Confirmed;
-        ConfirmedAt = DateTime.UtcNow;
-        SetUpdated();
-    }
-
     public void CheckIn()
     {
         Status = AppointmentStatus.CheckedIn;
         CheckedInAt = DateTime.UtcNow;
+        SetUpdated();
+    }
+
+    public void Start()
+    {
+        Status = AppointmentStatus.InProgress;
+        StartedAt = DateTime.UtcNow;
         SetUpdated();
     }
 
@@ -102,6 +103,21 @@ public class Appointment : TenantAuditableEntity
         EndAt = newEndAt;
         DurationMinutes = (int)(newEndAt - newStartAt).TotalMinutes;
         Status = AppointmentStatus.Scheduled;
+        SetUpdated();
+    }
+
+    public void UpdateNotes(string? notes)
+    {
+        Notes = notes;
+        SetUpdated();
+    }
+
+    /// <summary>
+    /// Override the status directly (admin/owner only). No transition guard — any status is allowed.
+    /// </summary>
+    public void ForceStatus(string newStatus)
+    {
+        Status = newStatus;
         SetUpdated();
     }
 }

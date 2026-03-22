@@ -71,6 +71,21 @@ public class AppointmentRepository(ApplicationDbContext dbContext) : IAppointmen
         dbContext.Set<Appointment>().Update(appointment);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<AppointmentStatusHistory>> GetHistoryAsync(
+        Guid appointmentId, CancellationToken cancellationToken = default) =>
+        await dbContext.Set<AppointmentStatusHistory>()
+            .Where(h => h.AppointmentId == appointmentId)
+            .OrderBy(h => h.ChangedAt)
+            .ToListAsync(cancellationToken);
+
+    public async Task AddHistoryAsync(
+        AppointmentStatusHistory entry, CancellationToken cancellationToken = default)
+    {
+        await dbContext.Set<AppointmentStatusHistory>().AddAsync(entry, cancellationToken);
+        // History is flushed to DB when the caller subsequently calls UpdateAsync (same SaveChanges)
+        // but if called standalone we save here too.
+    }
 }
 
 public class AppointmentTypeRepository(ApplicationDbContext dbContext) : IAppointmentTypeRepository

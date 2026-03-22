@@ -50,10 +50,19 @@ public class CancelAppointmentCommandHandler(IAppointmentRepository repo)
         if (appointment is null)
             return AppointmentErrors.NotFound;
 
-        if (appointment.Status == AppointmentStatus.Completed)
-            return AppointmentErrors.CannotCancelCompleted;
+        if (AppointmentStatus.IsTerminal(appointment.Status))
+            return AppointmentErrors.AlreadyTerminal;
 
+        if (!AppointmentStatus.CanTransitionTo(appointment.Status, AppointmentStatus.Cancelled))
+            return AppointmentErrors.InvalidTransition(appointment.Status, AppointmentStatus.Cancelled);
+
+        var fromStatus = appointment.Status;
         appointment.Cancel(command.Reason, command.CancelledByUserId);
+
+        var history = AppointmentStatusHistory.Create(
+            appointment.Id, fromStatus, AppointmentStatus.Cancelled,
+            command.CancelledByUserId, command.Reason);
+        await repo.AddHistoryAsync(history, cancellationToken);
         await repo.UpdateAsync(appointment, cancellationToken);
 
         return AppointmentResponse.FromEntity(appointment);
@@ -67,21 +76,83 @@ public class UpdateAppointmentStatusCommandHandler(IAppointmentRepository repo)
         UpdateAppointmentStatusCommand command,
         CancellationToken cancellationToken)
     {
+        if (!AppointmentStatus.IsValid(command.NewStatus))
+            return Error.Validation("Appointment.InvalidStatus", $"'{command.NewStatus}' is not a valid status.");
+
         var appointment = await repo.GetByIdAsync(command.Id, cancellationToken);
         if (appointment is null)
             return AppointmentErrors.NotFound;
 
+        if (AppointmentStatus.IsTerminal(appointment.Status))
+            return AppointmentErrors.AlreadyTerminal;
+
+        if (!AppointmentStatus.CanTransitionTo(appointment.Status, command.NewStatus))
+            return AppointmentErrors.InvalidTransition(appointment.Status, command.NewStatus);
+
+        var fromStatus = appointment.Status;
+
         switch (command.NewStatus)
         {
-            case AppointmentStatus.Confirmed: appointment.Confirm(); break;
-            case AppointmentStatus.CheckedIn: appointment.CheckIn(); break;
-            case AppointmentStatus.Completed: appointment.Complete(); break;
-            case AppointmentStatus.NoShow: appointment.MarkNoShow(); break;
-            default: return Error.Validation("Appointment.InvalidStatus", $"Cannot transition to status '{command.NewStatus}' via this endpoint.");
+            case AppointmentStatus.CheckedIn:  appointment.CheckIn(); break;
+            case AppointmentStatus.InProgress: appointment.Start();   break;
+            case AppointmentStatus.Completed:  appointment.Complete(); break;
+            case AppointmentStatus.NoShow:     appointment.MarkNoShow(); break;
+            case AppointmentStatus.Cancelled:
+                appointment.Cancel(null, command.ChangedByUserId); break;
         }
 
+        var history = AppointmentStatusHistory.Create(
+            appointment.Id, fromStatus, command.NewStatus, command.ChangedByUserId);
+        await repo.AddHistoryAsync(history, cancellationToken);
         await repo.UpdateAsync(appointment, cancellationToken);
+
         return AppointmentResponse.FromEntity(appointment);
     }
 }
+
+public class OverrideAppointmentStatusCommandHandler(IAppointmentRepository repo)
+    : IRequestHandler<OverrideAppointmentStatusCommand, ErrorOr<AppointmentResponse>>
+{
+    public async Task<ErrorOr<AppointmentResponse>> Handle(
+        OverrideAppointmentStatusCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (!AppointmentStatus.IsValid(command.NewStatus))
+            return Error.Validation("Appointment.InvalidStatus", $"'{command.NewStatus}' is not a valid status.");
+
+        var appointment = await repo.GetByIdAsync(command.Id, cancellationToken);
+        if (appointment is null)
+            return AppointmentErrors.NotFound;
+
+        var fromStatus = appointment.Status;
+        appointment.ForceStatus(command.NewStatus);
+
+        var history = AppointmentStatusHistory.Create(
+            appointment.Id, fromStatus, command.NewStatus,
+            command.OverriddenByUserId, command.Reason, isOverride: true);
+        await repo.AddHistoryAsync(history, cancellationToken);
+        await repo.UpdateAsync(appointment, cancellationToken);
+
+        return AppointmentResponse.FromEntity(appointment);
+    }
+}
+
+public class UpdateAppointmentNotesCommandHandler(IAppointmentRepository repo)
+    : IRequestHandler<UpdateAppointmentNotesCommand, ErrorOr<AppointmentResponse>>
+{
+    public async Task<ErrorOr<AppointmentResponse>> Handle(
+        UpdateAppointmentNotesCommand command,
+        CancellationToken cancellationToken)
+    {
+        var appointment = await repo.GetByIdAsync(command.Id, cancellationToken);
+        if (appointment is null)
+            return AppointmentErrors.NotFound;
+
+        appointment.UpdateNotes(command.Notes);
+        await repo.UpdateAsync(appointment, cancellationToken);
+
+        return AppointmentResponse.FromEntity(appointment);
+    }
+}
+
 

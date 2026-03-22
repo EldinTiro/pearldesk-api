@@ -23,6 +23,9 @@ public class StaffMemberConfiguration : IEntityTypeConfiguration<StaffMember>
         builder.Property(s => s.NpiNumber).HasMaxLength(10);
         builder.Property(s => s.Specialty).HasMaxLength(100);
         builder.Property(s => s.ColorHex).HasColumnType("char(7)");
+        builder.Property(s => s.Address).HasMaxLength(255);
+        builder.Property(s => s.City).HasMaxLength(100);
+        builder.Property(s => s.PostalCode).HasMaxLength(20);
 
         builder.HasIndex(s => new { s.TenantId, s.Email }).IsUnique()
             .HasFilter("\"Email\" IS NOT NULL AND \"IsDeleted\" = false");
@@ -65,7 +68,7 @@ public class StaffBlockedTimeConfiguration : IEntityTypeConfiguration<StaffBlock
         builder.HasKey(b => b.Id);
         builder.Property(b => b.StartAt).HasColumnType("timestamptz").IsRequired();
         builder.Property(b => b.EndAt).HasColumnType("timestamptz").IsRequired();
-        builder.Property(b => b.Reason).HasMaxLength(255);
+        builder.Property(b => b.AbsenceType).HasColumnName("absence_type").HasMaxLength(50);
     }
 }
 

@@ -26,7 +26,10 @@ public class UpdateStaffMemberCommandHandler(IStaffRepository staffRepository)
             command.Biography,
             command.LicenseNumber,
             command.LicenseExpiry,
-            command.NpiNumber);
+            command.NpiNumber,
+            command.Address,
+            command.City,
+            command.PostalCode);
 
         await staffRepository.UpdateAsync(staffMember, cancellationToken);
 

@@ -7,5 +7,5 @@ public record AddBlockedTimeCommand(
     Guid StaffMemberId,
     DateTime StartAt,
     DateTime EndAt,
-    string? Reason,
+    string AbsenceType,
     string? Notes) : IRequest<ErrorOr<StaffBlockedTimeResponse>>;

@@ -45,3 +45,18 @@ public class ListAppointmentsQueryHandler(IAppointmentRepository repo)
     }
 }
 
+public class GetAppointmentHistoryQueryHandler(IAppointmentRepository repo)
+    : IRequestHandler<GetAppointmentHistoryQuery, ErrorOr<IReadOnlyList<AppointmentStatusHistoryResponse>>>
+{
+    public async Task<ErrorOr<IReadOnlyList<AppointmentStatusHistoryResponse>>> Handle(
+        GetAppointmentHistoryQuery query, CancellationToken cancellationToken)
+    {
+        var appointment = await repo.GetByIdAsync(query.AppointmentId, cancellationToken);
+        if (appointment is null)
+            return AppointmentErrors.NotFound;
+
+        var history = await repo.GetHistoryAsync(query.AppointmentId, cancellationToken);
+        return history.Select(AppointmentStatusHistoryResponse.FromEntity).ToList();
+    }
+}
+

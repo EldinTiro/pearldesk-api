@@ -20,7 +20,7 @@ public class AddBlockedTimeCommandHandler(IStaffRepository staffRepository)
             command.StaffMemberId,
             command.StartAt,
             command.EndAt,
-            command.Reason,
+            command.AbsenceType,
             command.Notes);
 
         await staffRepository.AddBlockedTimeAsync(blockedTime, cancellationToken);

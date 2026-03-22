@@ -19,7 +19,16 @@ public class CreatePatientCommandHandler(IPatientRepository patientRepository)
                 return PatientErrors.AlreadyExists;
         }
 
-        var patientNumber = await patientRepository.GeneratePatientNumberAsync(cancellationToken);
+        var patientNumber = !string.IsNullOrWhiteSpace(command.PatientNumber)
+            ? command.PatientNumber
+            : await patientRepository.GeneratePatientNumberAsync(cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(command.PatientNumber))
+        {
+            var numberTaken = await patientRepository.GetByPatientNumberAsync(command.PatientNumber, cancellationToken);
+            if (numberTaken is not null)
+                return PatientErrors.PatientNumberAlreadyExists;
+        }
 
         var patient = Patient.Create(
             patientNumber,
@@ -34,6 +43,7 @@ public class CreatePatientCommandHandler(IPatientRepository patientRepository)
             command.FirstName,
             command.LastName,
             command.PreferredName,
+            command.ParentName,
             command.DateOfBirth,
             command.Gender,
             null,
@@ -53,6 +63,8 @@ public class CreatePatientCommandHandler(IPatientRepository patientRepository)
             command.SmsOptIn,
             command.EmailOptIn,
             command.Notes);
+
+        patient.SetFirstVisitDate(DateOnly.FromDateTime(DateTime.UtcNow));
 
         await patientRepository.AddAsync(patient, cancellationToken);
 

@@ -9,6 +9,7 @@ public class Patient : TenantAuditableEntity
     public string FirstName { get; private set; } = default!;
     public string LastName { get; private set; } = default!;
     public string? PreferredName { get; private set; }
+    public string? ParentName { get; private set; }
     public DateOnly? DateOfBirth { get; private set; }
     public Gender? Gender { get; private set; }
     public string? Pronouns { get; private set; }
@@ -70,6 +71,7 @@ public class Patient : TenantAuditableEntity
         string firstName,
         string lastName,
         string? preferredName,
+        string? parentName,
         DateOnly? dateOfBirth,
         Gender? gender,
         string? pronouns,
@@ -93,6 +95,7 @@ public class Patient : TenantAuditableEntity
         FirstName = firstName;
         LastName = lastName;
         PreferredName = preferredName;
+        ParentName = parentName;
         DateOfBirth = dateOfBirth;
         Gender = gender;
         Pronouns = pronouns;
@@ -125,6 +128,18 @@ public class Patient : TenantAuditableEntity
     {
         LastVisitDate = visitDate;
         if (FirstVisitDate is null) FirstVisitDate = visitDate;
+        SetUpdated();
+    }
+
+    public void SetRecall(DateOnly recallDueDate)
+    {
+        RecallDueDate = recallDueDate;
+        SetUpdated();
+    }
+
+    public void SetFirstVisitDate(DateOnly date)
+    {
+        FirstVisitDate = date;
         SetUpdated();
     }
 

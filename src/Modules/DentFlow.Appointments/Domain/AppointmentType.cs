@@ -11,6 +11,7 @@ public class AppointmentType : TenantAuditableEntity
     public bool IsBookableOnline { get; private set; }
     public bool RequiresNewPatientForm { get; private set; }
     public int SortOrder { get; private set; }
+    public decimal? DefaultFee { get; private set; }
 
     private AppointmentType() { }
 
@@ -19,7 +20,8 @@ public class AppointmentType : TenantAuditableEntity
         int defaultDurationMinutes,
         string? description = null,
         string? colorHex = null,
-        bool isBookableOnline = false)
+        bool isBookableOnline = false,
+        decimal? defaultFee = null)
     {
         return new AppointmentType
         {
@@ -27,17 +29,19 @@ public class AppointmentType : TenantAuditableEntity
             DefaultDurationMinutes = defaultDurationMinutes,
             Description = description,
             ColorHex = colorHex ?? "#6B7280",
-            IsBookableOnline = isBookableOnline
+            IsBookableOnline = isBookableOnline,
+            DefaultFee = defaultFee
         };
     }
 
-    public void Update(string name, int defaultDurationMinutes, string? description, string? colorHex, bool isBookableOnline)
+    public void Update(string name, int defaultDurationMinutes, string? description, string? colorHex, bool isBookableOnline, decimal? defaultFee)
     {
         Name = name;
         DefaultDurationMinutes = defaultDurationMinutes;
         Description = description;
         ColorHex = colorHex;
         IsBookableOnline = isBookableOnline;
+        DefaultFee = defaultFee;
         SetUpdated();
     }
 }

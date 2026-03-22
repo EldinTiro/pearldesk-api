@@ -11,6 +11,7 @@ using DentFlow.Infrastructure.Services;
 using DentFlow.Patients.Application.Interfaces;
 using DentFlow.Staff.Application.Interfaces;
 using DentFlow.Tenants.Application.Interfaces;
+using DentFlow.Billing.Application.Interfaces;
 using DentFlow.Treatments.Application.Interfaces;
 namespace DentFlow.Infrastructure;
 public static class DependencyInjection
@@ -42,14 +43,20 @@ public static class DependencyInjection
             services.AddStackExchangeRedisCache(options =>
                 options.Configuration = redisConnection);
         }
+        services.Configure<StorageOptions>(configuration.GetSection("Storage"));
+        services.AddScoped<IStorageService, S3StorageService>();
+
         services.AddScoped<IStaffRepository, StaffRepository>();
         services.AddScoped<IPatientRepository, PatientRepository>();
+        services.AddScoped<IPatientDocumentRepository, PatientDocumentRepository>();
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
         services.AddScoped<IAppointmentTypeRepository, AppointmentTypeRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ITreatmentPlanRepository, TreatmentPlanRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<IUserProvisioningService, UserProvisioningService>();
         services.AddScoped<IProviderBlockedTimeChecker, ProviderBlockedTimeChecker>();
+        services.AddScoped<IDashboardService, DashboardService>();
         return services;
     }
 }

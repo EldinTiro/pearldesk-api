@@ -9,6 +9,7 @@ public record UpdatePatientCommand(
     string FirstName,
     string LastName,
     string? PreferredName,
+    string? ParentName,
     DateOnly? DateOfBirth,
     Gender? Gender,
     string? Pronouns,

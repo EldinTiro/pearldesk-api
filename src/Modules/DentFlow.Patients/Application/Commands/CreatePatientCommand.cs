@@ -5,9 +5,11 @@ using DentFlow.Patients.Domain;
 namespace DentFlow.Patients.Application.Commands;
 
 public record CreatePatientCommand(
+    string? PatientNumber,
     string FirstName,
     string LastName,
     string? PreferredName,
+    string? ParentName,
     DateOnly? DateOfBirth,
     Gender? Gender,
     string? Email,

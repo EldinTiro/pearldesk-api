@@ -1,13 +1,16 @@
 ﻿using DentFlow.Identity;
 using DentFlow.Tenants;
+using DentFlow.Billing;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
 using Finbuckle.MultiTenant;
 using DentFlow.Application;
 using DentFlow.Infrastructure;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +27,8 @@ builder.Services.AddApplication(
     typeof(DentFlow.Patients.Application.PatientResponse).Assembly,
     typeof(DentFlow.Appointments.Application.AppointmentResponse).Assembly,
     typeof(DentFlow.Tenants.Application.Commands.CreateTenantCommand).Assembly,
-    typeof(DentFlow.Treatments.Application.TreatmentPlanResponse).Assembly
+    typeof(DentFlow.Treatments.Application.TreatmentPlanResponse).Assembly,
+    typeof(DentFlow.Billing.Application.InvoiceResponse).Assembly
 );
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -48,6 +52,8 @@ builder.Services
             typeof(DentFlow.Appointments.Endpoints.AppointmentBookEndpoint).Assembly,
             typeof(DentFlow.Tenants.Endpoints.TenantCreateEndpoint).Assembly,
             typeof(DentFlow.Treatments.Endpoints.TreatmentPlanCreateEndpoint).Assembly,
+            typeof(DentFlow.Billing.Endpoints.InvoiceCreateEndpoint).Assembly,
+            typeof(DentFlow.Reporting.Endpoints.DashboardStatsEndpoint).Assembly,
         ];
     })
     .AddAuthenticationJwtBearer(o => o.SigningKey = jwtSigningKey)
@@ -89,6 +95,16 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1)
             })));
 
+// Localization — supported languages
+var supportedCultures = new[] { new CultureInfo("en"), new CultureInfo("bs"), new CultureInfo("de") };
+builder.Services.AddLocalization();
+builder.Services.Configure<RequestLocalizationOptions>(opts =>
+{
+    opts.DefaultRequestCulture = new RequestCulture("en");
+    opts.SupportedCultures = supportedCultures;
+    opts.SupportedUICultures = supportedCultures;
+});
+
 var app = builder.Build();
 
 // Apply EF Core migrations on startup
@@ -101,6 +117,10 @@ using (var scope = app.Services.CreateScope())
 // Seed roles + SuperAdmin user on startup
 await SuperAdminSeeder.SeedAsync(app.Services);
 await AppointmentTypeSeeder.SeedAsync(app.Services);
+await PatientSeeder.SeedAsync(app.Services);
+await StaffSeeder.SeedAsync(app.Services);
+await AppointmentSeeder.SeedAsync(app.Services);
+await InvoiceSeeder.SeedAsync(app.Services);
 
 // Health check — before any auth middleware
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
@@ -109,6 +129,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = Dat
 app.UseSerilogRequestLogging();
 app.UseCors();
 app.UseRateLimiter();
+app.UseRequestLocalization();
 app.UseMultiTenant();
 app.UseAuthentication();
 app.UseAuthorization();

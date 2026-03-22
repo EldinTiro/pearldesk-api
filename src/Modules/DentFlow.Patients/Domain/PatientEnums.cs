@@ -4,7 +4,6 @@ public enum PatientStatus
 {
     Active,
     Inactive,
-    Deceased,
     Transferred
 }
 

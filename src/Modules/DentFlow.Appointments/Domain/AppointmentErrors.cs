@@ -21,5 +21,11 @@ public static class AppointmentErrors
 
     public static readonly Error ProviderUnavailable =
         Error.Conflict("Appointment.ProviderUnavailable", "This provider has a scheduled leave or block during the selected time. Please choose a different date or another provider.");
+
+    public static Error InvalidTransition(string from, string to) =>
+        Error.Conflict("Appointment.InvalidTransition", $"Cannot transition from '{from}' to '{to}'.");
+
+    public static readonly Error AlreadyTerminal =
+        Error.Conflict("Appointment.AlreadyTerminal", "This appointment is in a terminal state and cannot be changed.");
 }
 

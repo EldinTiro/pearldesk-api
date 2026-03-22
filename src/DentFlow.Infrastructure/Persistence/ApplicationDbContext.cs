@@ -9,6 +9,7 @@ using DentFlow.Domain.Tenants;
 using DentFlow.Patients.Domain;
 using DentFlow.Staff.Domain;
 using DentFlow.Treatments.Domain;
+using DentFlow.Billing.Domain;
 
 namespace DentFlow.Infrastructure.Persistence;
 
@@ -20,6 +21,7 @@ public class ApplicationDbContext(
     // Tenant & Identity
     public DbSet<Domain.Tenants.Tenant> Tenants => Set<Domain.Tenants.Tenant>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<UserPreferences> UserPreferences => Set<UserPreferences>();
 
     // Staff
     public DbSet<StaffMember> StaffMembers => Set<StaffMember>();
@@ -31,14 +33,21 @@ public class ApplicationDbContext(
     public DbSet<PatientEmergencyContact> PatientEmergencyContacts => Set<PatientEmergencyContact>();
     public DbSet<Allergy> Allergies => Set<Allergy>();
     public DbSet<MedicalHistory> MedicalHistories => Set<MedicalHistory>();
+    public DbSet<PatientDocument> PatientDocuments => Set<PatientDocument>();
 
     // Appointments
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<AppointmentType> AppointmentTypes => Set<AppointmentType>();
+    public DbSet<AppointmentStatusHistory> AppointmentStatusHistories => Set<AppointmentStatusHistory>();
 
     // Treatments
     public DbSet<TreatmentPlan> TreatmentPlans => Set<TreatmentPlan>();
     public DbSet<TreatmentPlanItem> TreatmentPlanItems => Set<TreatmentPlanItem>();
+
+    // Billing
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceLineItem> InvoiceLineItems => Set<InvoiceLineItem>();
+    public DbSet<InvoicePayment> InvoicePayments => Set<InvoicePayment>();
 
     private Guid? CurrentTenantId =>
         Guid.TryParse(multiTenantContextAccessor.MultiTenantContext?.TenantInfo?.Identifier, out var id)

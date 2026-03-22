@@ -16,8 +16,10 @@
     <ProjectReference Include="..\Modules\DentFlow.Appointments\DentFlow.Appointments.csproj" />
     <ProjectReference Include="..\Modules\DentFlow.Tenants\DentFlow.Tenants.csproj" />
     <ProjectReference Include="..\Modules\DentFlow.Treatments\DentFlow.Treatments.csproj" />
+    <ProjectReference Include="..\Modules\DentFlow.Billing\DentFlow.Billing.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.*" />
     <PackageReference Include="Finbuckle.MultiTenant" Version="9.*" />
     <PackageReference Include="Finbuckle.MultiTenant.EntityFrameworkCore" Version="9.*" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.*" />

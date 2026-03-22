@@ -16,3 +16,6 @@ public record ListAppointmentsQuery(
 
 public record ListAppointmentTypesQuery : IRequest<ErrorOr<IReadOnlyList<AppointmentTypeResponse>>>;
 
+public record GetAppointmentHistoryQuery(Guid AppointmentId)
+    : IRequest<ErrorOr<IReadOnlyList<AppointmentStatusHistoryResponse>>>;
+

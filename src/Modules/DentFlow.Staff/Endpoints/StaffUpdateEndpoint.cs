@@ -20,7 +20,8 @@ public class StaffUpdateEndpoint(ISender sender) : Endpoint<UpdateStaffMemberReq
         var id = Route<Guid>("id");
         var command = new UpdateStaffMemberCommand(
             id, req.FirstName, req.LastName, req.Email, req.Phone, req.Specialty,
-            req.ColorHex, req.Biography, req.LicenseNumber, req.LicenseExpiry, req.NpiNumber);
+            req.ColorHex, req.Biography, req.LicenseNumber, req.LicenseExpiry, req.NpiNumber,
+            req.Address, req.City, req.PostalCode);
 
         var result = await sender.Send(command, ct);
         if (result.IsError) { await SendErrorsAsync(cancellation: ct); return; }
@@ -31,4 +32,5 @@ public class StaffUpdateEndpoint(ISender sender) : Endpoint<UpdateStaffMemberReq
 public record UpdateStaffMemberRequest(
     string FirstName, string LastName, string? Email, string? Phone,
     string? Specialty, string? ColorHex, string? Biography,
-    string? LicenseNumber, DateOnly? LicenseExpiry, string? NpiNumber);
+    string? LicenseNumber, DateOnly? LicenseExpiry, string? NpiNumber,
+    string? Address, string? City, string? PostalCode);

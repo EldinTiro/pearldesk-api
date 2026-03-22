@@ -18,6 +18,9 @@ public class StaffMember : TenantAuditableEntity
     public string? Specialty { get; private set; }
     public string? ColorHex { get; private set; }
     public string? Biography { get; private set; }
+    public string? Address { get; private set; }
+    public string? City { get; private set; }
+    public string? PostalCode { get; private set; }
     public bool IsActive { get; private set; } = true;
     public DateOnly? HireDate { get; private set; }
     public DateOnly? TerminationDate { get; private set; }
@@ -63,7 +66,10 @@ public class StaffMember : TenantAuditableEntity
         string? biography,
         string? licenseNumber,
         DateOnly? licenseExpiry,
-        string? npiNumber)
+        string? npiNumber,
+        string? address,
+        string? city,
+        string? postalCode)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -75,6 +81,9 @@ public class StaffMember : TenantAuditableEntity
         LicenseNumber = licenseNumber;
         LicenseExpiry = licenseExpiry;
         NpiNumber = npiNumber;
+        Address = address;
+        City = city;
+        PostalCode = postalCode;
         SetUpdated();
     }
 

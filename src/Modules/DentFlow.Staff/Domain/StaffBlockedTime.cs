@@ -7,7 +7,7 @@ public class StaffBlockedTime : TenantAuditableEntity
     public Guid StaffMemberId { get; private set; }
     public DateTime StartAt { get; private set; }
     public DateTime EndAt { get; private set; }
-    public string? Reason { get; private set; }
+    public string? AbsenceType { get; private set; }
     public string? Notes { get; private set; }
 
     // Navigation
@@ -19,7 +19,7 @@ public class StaffBlockedTime : TenantAuditableEntity
         Guid staffMemberId,
         DateTime startAt,
         DateTime endAt,
-        string? reason = null,
+        string? absenceType = null,
         string? notes = null)
     {
         return new StaffBlockedTime
@@ -27,7 +27,7 @@ public class StaffBlockedTime : TenantAuditableEntity
             StaffMemberId = staffMemberId,
             StartAt = startAt,
             EndAt = endAt,
-            Reason = reason,
+            AbsenceType = absenceType,
             Notes = notes
         };
     }

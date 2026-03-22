@@ -15,6 +15,7 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(p => p.FirstName).HasMaxLength(100).IsRequired();
         builder.Property(p => p.LastName).HasMaxLength(100).IsRequired();
         builder.Property(p => p.PreferredName).HasMaxLength(100);
+        builder.Property(p => p.ParentName).HasMaxLength(150);
         builder.Property(p => p.Gender)
             .HasConversion<string>()
             .HasMaxLength(20);
@@ -99,6 +100,21 @@ public class MedicalHistoryConfiguration : IEntityTypeConfiguration<MedicalHisto
         builder.Property(m => m.RecordedAt).HasColumnType("timestamptz").IsRequired();
         builder.Property(m => m.PhysicianName).HasMaxLength(255);
         builder.Property(m => m.PhysicianPhone).HasMaxLength(30);
+    }
+}
+
+public class PatientDocumentConfiguration : IEntityTypeConfiguration<PatientDocument>
+{
+    public void Configure(EntityTypeBuilder<PatientDocument> builder)
+    {
+        builder.ToTable("patient_documents");
+        builder.HasKey(d => d.Id);
+        builder.Property(d => d.FileName).HasMaxLength(500).IsRequired();
+        builder.Property(d => d.ContentType).HasMaxLength(200).IsRequired();
+        builder.Property(d => d.StorageKey).HasMaxLength(1000).IsRequired();
+        builder.Property(d => d.Category).HasMaxLength(50).IsRequired();
+        builder.Property(d => d.Notes).HasMaxLength(1000);
+        builder.HasIndex(d => new { d.TenantId, d.PatientId });
     }
 }
 

@@ -20,7 +20,8 @@ public class PatientUpdateEndpoint(ISender sender) : Endpoint<UpdatePatientReque
     {
         var id = Route<Guid>("id");
         var command = new UpdatePatientCommand(
-            id, req.FirstName, req.LastName, req.PreferredName, req.DateOfBirth, req.Gender,
+            id, req.FirstName, req.LastName, req.PreferredName, req.ParentName,
+            req.DateOfBirth, req.Gender,
             req.Pronouns, req.Email, req.PhoneMobile, req.PhoneHome, req.PhoneWork,
             req.PreferredContactMethod, req.AddressLine1, req.AddressLine2, req.City,
             req.StateProvince, req.PostalCode, req.CountryCode, req.Occupation,
@@ -33,7 +34,8 @@ public class PatientUpdateEndpoint(ISender sender) : Endpoint<UpdatePatientReque
 }
 
 public record UpdatePatientRequest(
-    string FirstName, string LastName, string? PreferredName, DateOnly? DateOfBirth, Gender? Gender,
+    string FirstName, string LastName, string? PreferredName, string? ParentName,
+    DateOnly? DateOfBirth, Gender? Gender,
     string? Pronouns, string? Email, string? PhoneMobile, string? PhoneHome, string? PhoneWork,
     ContactMethod? PreferredContactMethod, string? AddressLine1, string? AddressLine2, string? City,
     string? StateProvince, string? PostalCode, string? CountryCode, string? Occupation,

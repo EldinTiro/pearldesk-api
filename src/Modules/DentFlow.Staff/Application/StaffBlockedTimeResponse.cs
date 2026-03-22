@@ -7,7 +7,7 @@ public record StaffBlockedTimeResponse(
     Guid StaffMemberId,
     DateTime StartAt,
     DateTime EndAt,
-    string? Reason,
+    string? AbsenceType,
     string? Notes)
 {
     public static StaffBlockedTimeResponse FromEntity(StaffBlockedTime b) => new(
@@ -15,6 +15,6 @@ public record StaffBlockedTimeResponse(
         b.StaffMemberId,
         b.StartAt,
         b.EndAt,
-        b.Reason,
+        b.AbsenceType,
         b.Notes);
 }

@@ -20,6 +20,7 @@ public class UpdatePatientCommandHandler(IPatientRepository patientRepository)
             command.FirstName,
             command.LastName,
             command.PreferredName,
+            command.ParentName,
             command.DateOfBirth,
             command.Gender,
             command.Pronouns,

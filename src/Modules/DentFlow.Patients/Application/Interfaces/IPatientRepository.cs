@@ -6,6 +6,7 @@ public interface IPatientRepository
 {
     Task<Patient?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Patient?> GetByEmailAsync(string? email, CancellationToken cancellationToken = default);
+    Task<Patient?> GetByPatientNumberAsync(string patientNumber, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Patient> Items, int Total)> ListAsync(
         string? searchTerm,
         PatientStatus? status,

@@ -14,9 +14,10 @@ public class AddBlockedTimeCommandValidator : AbstractValidator<AddBlockedTimeCo
             .GreaterThan(x => x.StartAt)
             .WithMessage("End time must be after start time.");
 
-        RuleFor(x => x.Reason)
-            .MaximumLength(255)
-            .When(x => !string.IsNullOrWhiteSpace(x.Reason));
+        RuleFor(x => x.AbsenceType)
+            .NotEmpty()
+            .Must(v => new[] { "Vacation", "Sickness", "SpecialLeave", "ReligiousHoliday", "PublicHoliday" }.Contains(v))
+            .WithMessage("Invalid absence type.");
 
         RuleFor(x => x.Notes)
             .MaximumLength(1000)

@@ -18,6 +18,9 @@ public interface IAppointmentRepository
     Task AddAsync(Appointment appointment, CancellationToken cancellationToken = default);
     Task UpdateAsync(Appointment appointment, CancellationToken cancellationToken = default);
     Task SoftDeleteAsync(Appointment appointment, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<AppointmentStatusHistory>> GetHistoryAsync(Guid appointmentId, CancellationToken cancellationToken = default);
+    Task AddHistoryAsync(AppointmentStatusHistory entry, CancellationToken cancellationToken = default);
 }
 
 public interface IAppointmentTypeRepository
@@ -28,4 +31,5 @@ public interface IAppointmentTypeRepository
     Task UpdateAsync(AppointmentType appointmentType, CancellationToken cancellationToken = default);
     Task SoftDeleteAsync(AppointmentType appointmentType, CancellationToken cancellationToken = default);
 }
+
 

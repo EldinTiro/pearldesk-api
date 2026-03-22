@@ -19,6 +19,9 @@ public record StaffMemberResponse(
     bool IsActive,
     DateOnly? HireDate,
     DateOnly? TerminationDate,
+    string? Address,
+    string? City,
+    string? PostalCode,
     DateTime CreatedAt,
     DateTime? UpdatedAt)
 {
@@ -39,6 +42,9 @@ public record StaffMemberResponse(
         s.IsActive,
         s.HireDate,
         s.TerminationDate,
+        s.Address,
+        s.City,
+        s.PostalCode,
         s.CreatedAt,
         s.UpdatedAt);
 }
